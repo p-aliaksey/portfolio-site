@@ -2,21 +2,33 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Install Hugo
+        run: |
+          wget https://github.com/gohugoio/hugo/releases/download/v0.134.2/hugo_extended_0.134.2_linux-amd64.tar.gz
+          tar -xzf hugo_extended_0.134.2_linux-amd64.tar.gz
+          sudo mv hugo /usr/local/bin/
+
+      - name: Build Hugo site
+        run: |
+          cd hugo-site
+          hugo -d ../app/public
 
       - name: Build Docker image
         run: docker build -t devops-portfolio ./app
 
-      - name: Deploy to server
-        uses: appleboy/ssh-action@master
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
