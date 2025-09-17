@@ -1,0 +1,13 @@
+- hosts: web
+  become: yes
+  tasks:
+    - name: Install Docker
+      apt:
+        name: ["docker.io", "docker-compose"]
+        state: present
+        update_cache: yes
+
+    - name: Copy project
+      synchronize:
+        src: "../.."
+        dest: "/home/ubuntu/devops-portfolio"
