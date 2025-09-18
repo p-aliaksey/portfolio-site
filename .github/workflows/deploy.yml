@@ -27,17 +27,27 @@ jobs:
           yc config set folder-id ${{ secrets.YC_FOLDER_ID }}
           yc config set compute-default-zone ${{ secrets.YC_ZONE }}
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.6
+
       - name: Terraform init & apply
         working-directory: infra/terraform
         run: |
           terraform init -input=false
           terraform apply -auto-approve -input=false
 
+      - name: Debug Terraform outputs
+        working-directory: infra/terraform
+        run: terraform output -json
+
       - name: Get external IP
         id: ip
         working-directory: infra/terraform
         run: |
           echo "EXTERNAL_IP=$(terraform output -raw external_ip)" >> $GITHUB_ENV
+        shell: bash
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
