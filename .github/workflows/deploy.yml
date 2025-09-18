@@ -16,7 +16,8 @@ jobs:
       - name: Install Yandex Cloud CLI
         run: |
           curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-          export PATH=$PATH:/home/runner/.yandex-cloud/bin
+          export PATH="$HOME/yandex-cloud/bin:$PATH"
+          echo "$HOME/yandex-cloud/bin" >> $GITHUB_PATH
           yc --version
 
       - name: Configure Yandex Cloud
@@ -29,8 +30,8 @@ jobs:
       - name: Terraform init & apply
         working-directory: infra/terraform
         run: |
-          terraform init
-          terraform apply -auto-approve
+          terraform init -input=false
+          terraform apply -auto-approve -input=false
 
       - name: Get external IP
         id: ip
@@ -42,9 +43,13 @@ jobs:
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ env.EXTERNAL_IP }}
-          username: ubuntu
+          username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/MySite
+            if [ ! -d "MySite" ]; then
+              git clone https://github.com/${{ github.repository }} MySite
+            fi
+            cd MySite
+            git pull origin main
             docker-compose down
             docker-compose up -d --build
