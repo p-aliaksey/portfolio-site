@@ -10,10 +10,10 @@
     dest: /opt/devops-portfolio/docker-compose.yml
 
 - name: Upload Nginx config
-  synchronize:
+  copy:
     src: ../../../infra/nginx/
     dest: /opt/devops-portfolio/infra/nginx/
-    recursive: yes
+    mode: '0644'
 
 - name: Pull images
   community.docker.docker_compose_v2:

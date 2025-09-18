@@ -36,10 +36,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Ansible
+      - name: Install Ansible and collections
         run: |
           python3 -m pip install --upgrade pip
-          pip install ansible community.docker
+          pip install ansible-core
+          mkdir -p ~/.ansible/collections
+          ansible-galaxy collection install community.docker --force
       - name: Add SSH key
         uses: webfactory/ssh-agent@v0.9.0
         with:
