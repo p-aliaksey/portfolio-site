@@ -1,4 +1,6 @@
 variable "yc_token" {}
-variable "cloud_id" {}
-variable "folder_id" {}
-variable "subnet_id" {}
+variable "yc_cloud_id" {}
+variable "yc_folder_id" {}
+variable "yc_zone" {
+  default = "ru-central1-a"
+}
