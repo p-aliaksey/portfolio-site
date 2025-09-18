@@ -1,6 +1,9 @@
-variable "yc_token" {}
-variable "yc_cloud_id" {}
-variable "yc_folder_id" {}
-variable "yc_zone" {
-  default = "ru-central1-a"
+variable "cloud_id" {
+  description = "Yandex Cloud ID"
+  type        = string
+}
+
+variable "folder_id" {
+  description = "Yandex Cloud Folder ID"
+  type        = string
 }
