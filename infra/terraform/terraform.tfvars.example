@@ -1,0 +1,8 @@
+yc_token           = "<yc-oauth-token>"
+yc_cloud_id        = "<cloud-id>"
+yc_folder_id       = "<folder-id>"
+yc_zone            = "ru-central1-a"
+ssh_user           = "ubuntu"
+public_ssh_key_path= "~/.ssh/id_rsa.pub"
+# Get latest Ubuntu 24.04 LTS image-id: `yc compute image list --folder-id standard-images | findstr 24.04`
+ubuntu_image_id    = "<image-id>"

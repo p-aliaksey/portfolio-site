@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>О проекте | DevOps Portfolio</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <nav>
+      <a class="brand" href="/">DevOps Portfolio</a>
+      <div class="links">
+        <a href="/about">О проекте</a>
+        <a href="/metrics">Метрики</a>
+      </div>
+    </nav>
+  </header>
+  <main class="doc">
+    <h1>О проекте</h1>
+    <p>Проект демонстрирует полный путь от кода до продакшена.</p>
+    <h2>Архитектура</h2>
+    <ul>
+      <li>IaC: Terraform управляет VM в Yandex Cloud</li>
+      <li>Конфигурация: Ansible устанавливает Docker и деплоит контейнеры</li>
+      <li>CI/CD: GitHub Actions билдит образ, пушит и вызывает Ansible</li>
+      <li>Реверс-прокси: Nginx</li>
+      <li>Мониторинг: Prometheus + Grafana</li>
+      <li>Логи: Loki + Promtail</li>
+      <li>Бэкапы: restic/rclone (скрипты)</li>
+    </ul>
+  </main>
+  <footer>
+    <p>Документация и код в репозитории.</p>
+  </footer>
+</body>
+</html>

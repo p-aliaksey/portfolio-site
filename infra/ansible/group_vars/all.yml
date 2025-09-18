@@ -1,0 +1,2 @@
+app_image: ghcr.io/your-org/devops-portfolio:latest
+grafana_admin_password: admin

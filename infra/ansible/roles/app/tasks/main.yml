@@ -1,0 +1,26 @@
+- name: Create app directory
+  file:
+    path: /opt/devops-portfolio
+    state: directory
+    mode: '0755'
+
+- name: Upload docker-compose.yml
+  copy:
+    src: ../../../docker-compose.yml
+    dest: /opt/devops-portfolio/docker-compose.yml
+
+- name: Upload Nginx config
+  synchronize:
+    src: ../../../infra/nginx/
+    dest: /opt/devops-portfolio/infra/nginx/
+    recursive: yes
+
+- name: Pull images
+  community.docker.docker_compose_v2:
+    project_src: /opt/devops-portfolio
+    pull: always
+
+- name: Start stack
+  community.docker.docker_compose_v2:
+    project_src: /opt/devops-portfolio
+    state: present
