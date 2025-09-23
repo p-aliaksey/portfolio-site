@@ -6,12 +6,12 @@
 
 - name: Upload docker-compose.yml
   copy:
-    src: ../../../docker-compose.yml
+    src: ../../../../docker-compose.yml
     dest: /opt/devops-portfolio/docker-compose.yml
 
 - name: Upload Nginx config
   copy:
-    src: ../../../infra/nginx/
+    src: ../../../../infra/nginx/
     dest: /opt/devops-portfolio/infra/nginx/
     mode: '0644'
 
