@@ -83,7 +83,7 @@ resource "yandex_compute_instance" "vm" {
   }
 
   metadata = {
-    ssh-keys = "${var.ssh_user}:${file(var.public_ssh_key_path)}"
+    ssh-keys = "${var.ssh_user}:${var.public_ssh_key}"
   }
 }
 

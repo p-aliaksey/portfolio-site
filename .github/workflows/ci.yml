@@ -6,6 +6,35 @@ on:
   workflow_dispatch: {}
 
 jobs:
+  infra:
+    if: ${{ secrets.APPLY_INFRA == 'true' }}
+    runs-on: ubuntu-latest
+    outputs:
+      public_ip: ${{ steps.tf-output.outputs.public_ip }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+      - name: Terraform Init/Apply (YC)
+        working-directory: infra/terraform
+        env:
+          TF_VAR_yc_token: ${{ secrets.YC_TOKEN }}
+          TF_VAR_yc_cloud_id: ${{ secrets.YC_CLOUD_ID }}
+          TF_VAR_yc_folder_id: ${{ secrets.YC_FOLDER_ID }}
+          TF_VAR_yc_zone: ${{ secrets.YC_ZONE }}
+          TF_VAR_ssh_user: ${{ secrets.SSH_USER }}
+          TF_VAR_public_ssh_key: ${{ secrets.PUBLIC_SSH_KEY }}
+          TF_VAR_ubuntu_image_id: ${{ secrets.UBUNTU_IMAGE_ID }}
+        run: |
+          terraform init -input=false
+          terraform apply -auto-approve -input=false
+      - name: Capture Terraform outputs
+        id: tf-output
+        working-directory: infra/terraform
+        run: |
+          echo "public_ip=$(terraform output -raw public_ip)" >> $GITHUB_OUTPUT
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
@@ -32,7 +61,7 @@ jobs:
           file: Dockerfile
 
   deploy:
-    needs: build-and-push
+    needs: [build-and-push, infra]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -46,13 +75,19 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Add host key to known_hosts
+      - name: Resolve VM IP and add known_hosts
+        id: ip
+        shell: bash
         run: |
+          VM_IP="${{ needs.infra.outputs.public_ip }}"
+          if [ -z "$VM_IP" ]; then VM_IP="${{ secrets.VM_PUBLIC_IP }}"; fi
+          if [ -z "$VM_IP" ]; then echo "::error::VM IP is empty. Set secret VM_PUBLIC_IP or enable Terraform job."; exit 1; fi
+          echo "vm_ip=$VM_IP" >> $GITHUB_OUTPUT
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.VM_PUBLIC_IP }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H "$VM_IP" -p 22 >> ~/.ssh/known_hosts
       - name: Update inventory with VM IP
         run: |
-          sed -i "s/YOUR_VM_IP/${{ secrets.VM_PUBLIC_IP }}/" infra/ansible/inventory.ini
+          sed -i "s/YOUR_VM_IP/${{ steps.ip.outputs.vm_ip }}/" infra/ansible/inventory.ini
       - name: Run Ansible playbook
         run: |
           ansible-playbook -i infra/ansible/inventory.ini infra/ansible/site.yml
