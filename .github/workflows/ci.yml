@@ -51,9 +51,9 @@ jobs:
           terraform apply -auto-approve -input=false
       - name: Capture Terraform outputs
         id: tf-output
-        working-directory: infra/terraform
         if: ${{ env.APPLY_INFRA == 'true' }}
         run: |
+          cd infra/terraform
           echo "public_ip=$(terraform output -raw public_ip)" >> $GITHUB_OUTPUT
   build-and-push:
     runs-on: ubuntu-latest
