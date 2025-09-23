@@ -15,6 +15,18 @@
     dest: /opt/devops-portfolio/infra/nginx/
     mode: '0644'
 
+- name: Upload monitoring configs (Prometheus, Grafana)
+  copy:
+    src: ../../../../infra/monitoring/
+    dest: /opt/devops-portfolio/infra/monitoring/
+    mode: '0644'
+
+- name: Upload logging configs (Loki, Promtail)
+  copy:
+    src: ../../../../infra/logging/
+    dest: /opt/devops-portfolio/infra/logging/
+    mode: '0644'
+
 - name: Login to GHCR (optional)
   community.docker.docker_login:
     registry_url: ghcr.io
