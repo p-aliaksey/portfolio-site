@@ -48,6 +48,7 @@ jobs:
           TF_VAR_ubuntu_image_id: ${{ secrets.UBUNTU_IMAGE_ID }}
           TF_VAR_vpc_network_id: ${{ secrets.VPC_NETWORK_ID }}
           TF_VAR_vpc_subnet_id: ${{ secrets.VPC_SUBNET_ID }}
+          TF_VAR_security_group_id: ${{ secrets.SECURITY_GROUP_ID }}
         run: |
           terraform init -input=false
           terraform apply -auto-approve -input=false

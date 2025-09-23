@@ -34,8 +34,9 @@ resource "yandex_vpc_subnet" "subnet" {
 }
 
 resource "yandex_vpc_security_group" "sg" {
-  name        = "devops-portfolio-sg"
-  network_id  = local.use_existing_vpc ? var.vpc_network_id : yandex_vpc_network.vpc[0].id
+  count      = var.security_group_id != "" ? 0 : 1
+  name       = "devops-portfolio-sg"
+  network_id = local.use_existing_vpc ? var.vpc_network_id : yandex_vpc_network.vpc[0].id
 
   ingress {
     protocol       = "TCP"
@@ -86,7 +87,7 @@ resource "yandex_compute_instance" "vm" {
   network_interface {
     subnet_id          = local.use_existing_subnet ? var.vpc_subnet_id : yandex_vpc_subnet.subnet[0].id
     nat                = true
-    security_group_ids = [yandex_vpc_security_group.sg.id]
+    security_group_ids = [var.security_group_id != "" ? var.security_group_id : yandex_vpc_security_group.sg[0].id]
   }
 
   metadata = {

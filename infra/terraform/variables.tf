@@ -42,3 +42,9 @@ variable "vpc_subnet_id" {
   default     = ""
   description = "Existing VPC subnet ID (leave empty to create a new one)"
 }
+
+variable "security_group_id" {
+  type        = string
+  default     = ""
+  description = "Existing Security Group ID (leave empty to create a new one)"
+}
