@@ -35,7 +35,7 @@ resource "yandex_vpc_subnet" "subnet" {
 
 resource "yandex_vpc_security_group" "sg" {
   name        = "devops-portfolio-sg"
-  network_id  = yandex_vpc_network.vpc.id
+  network_id  = local.use_existing_vpc ? var.vpc_network_id : yandex_vpc_network.vpc[0].id
 
   ingress {
     protocol       = "TCP"
