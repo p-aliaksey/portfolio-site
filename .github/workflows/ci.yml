@@ -15,19 +15,30 @@ permissions:
 
 jobs:
   infra:
-    if: ${{ secrets.APPLY_INFRA == 'true' }}
     runs-on: ubuntu-latest
     outputs:
       public_ip: ${{ steps.tf-output.outputs.public_ip }}
     steps:
       - uses: actions/checkout@v4
+      - name: Maybe skip infra
+        id: gate
+        env:
+          APPLY_INFRA: ${{ secrets.APPLY_INFRA }}
+        run: |
+          if [ "${APPLY_INFRA}" != "true" ]; then
+            echo "Terraform infra disabled (APPLY_INFRA != true)"
+            echo "public_ip=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.5
       - name: Terraform Init/Apply (YC)
+        if: ${{ env.APPLY_INFRA == 'true' }}
         working-directory: infra/terraform
         env:
+          APPLY_INFRA: ${{ secrets.APPLY_INFRA }}
           TF_VAR_yc_token: ${{ secrets.YC_TOKEN }}
           TF_VAR_yc_cloud_id: ${{ secrets.YC_CLOUD_ID }}
           TF_VAR_yc_folder_id: ${{ secrets.YC_FOLDER_ID }}
@@ -41,6 +52,7 @@ jobs:
       - name: Capture Terraform outputs
         id: tf-output
         working-directory: infra/terraform
+        if: ${{ env.APPLY_INFRA == 'true' }}
         run: |
           echo "public_ip=$(terraform output -raw public_ip)" >> $GITHUB_OUTPUT
   build-and-push:
