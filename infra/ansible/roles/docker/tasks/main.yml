@@ -18,10 +18,22 @@
     creates: /etc/apt/keyrings/docker.gpg
 
 - name: Add Docker repository
-  copy:
-    dest: /etc/apt/sources.list.d/docker.list
-    content: |
-      deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable
+  block:
+    - name: Detect dpkg architecture
+      command: dpkg --print-architecture
+      register: dpkg_arch
+      changed_when: false
+
+    - name: Detect Ubuntu codename
+      shell: . /etc/os-release && echo $VERSION_CODENAME
+      register: ubuntu_codename
+      changed_when: false
+
+    - name: Write Docker APT repository
+      copy:
+        dest: /etc/apt/sources.list.d/docker.list
+        content: |
+          deb [arch={{ dpkg_arch.stdout }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ubuntu_codename.stdout }} stable
 
 - name: Install Docker Engine
   apt:
