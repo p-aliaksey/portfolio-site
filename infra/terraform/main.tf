@@ -15,14 +15,21 @@ provider "yandex" {
   zone      = var.yc_zone
 }
 
+locals {
+  use_existing_vpc   = var.vpc_network_id != ""
+  use_existing_subnet = var.vpc_subnet_id != ""
+}
+
 resource "yandex_vpc_network" "vpc" {
-  name = "devops-portfolio-net"
+  count = local.use_existing_vpc ? 0 : 1
+  name  = "devops-portfolio-net"
 }
 
 resource "yandex_vpc_subnet" "subnet" {
+  count          = local.use_existing_subnet ? 0 : 1
   name           = "devops-portfolio-subnet"
   zone           = var.yc_zone
-  network_id     = yandex_vpc_network.vpc.id
+  network_id     = local.use_existing_vpc ? var.vpc_network_id : yandex_vpc_network.vpc[0].id
   v4_cidr_blocks = ["10.10.0.0/24"]
 }
 
@@ -77,7 +84,7 @@ resource "yandex_compute_instance" "vm" {
   }
 
   network_interface {
-    subnet_id          = yandex_vpc_subnet.subnet.id
+    subnet_id          = local.use_existing_subnet ? var.vpc_subnet_id : yandex_vpc_subnet.subnet[0].id
     nat                = true
     security_group_ids = [yandex_vpc_security_group.sg.id]
   }
