@@ -3,7 +3,6 @@ DevOps Portfolio Showcase
 
 Production-ready personal site for a DevOps engineer with full lifecycle: IaC (Terraform), configuration management (Ansible), containerization (Docker), CI/CD (GitHub Actions), monitoring (Prometheus, Grafana), logging (Loki, Promtail), web server (Nginx), backups, and notifications.
 
-Inspired by: `https://khaustovtech.club/`
 
 Features
 - Static-like Flask site with 3 pages: Home, About/Docs, Metrics
@@ -46,4 +45,4 @@ docker-compose.yml
 
 License
 MIT
-v_9
+v_10
