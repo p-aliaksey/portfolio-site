@@ -1,2 +1,5 @@
-app_image: ghcr.io/your-org/devops-portfolio:latest
+github_repository: "{{ lookup('env','GITHUB_REPOSITORY') | default('owner/repo', true) }}"
+app_image: "{{ omit }}"
 grafana_admin_password: admin
+ghcr_username: "{{ lookup('env','GHCR_USERNAME') | default(omit, true) }}"
+ghcr_token: "{{ lookup('env','GHCR_TOKEN') | default(omit, true) }}"

@@ -5,8 +5,8 @@
     mode: '0755'
 
 - name: Upload docker-compose.yml
-  copy:
-    src: ../../../../docker-compose.yml
+  template:
+    src: ../templates/docker-compose.yml.j2
     dest: /opt/devops-portfolio/docker-compose.yml
 
 - name: Upload Nginx config
@@ -14,6 +14,13 @@
     src: ../../../../infra/nginx/
     dest: /opt/devops-portfolio/infra/nginx/
     mode: '0644'
+
+- name: Login to GHCR (optional)
+  community.docker.docker_login:
+    registry_url: ghcr.io
+    username: "{{ ghcr_username | default(omit) }}"
+    password: "{{ ghcr_token | default(omit) }}"
+  when: ghcr_username is defined and ghcr_token is defined
 
 - name: Pull images
   community.docker.docker_compose_v2:

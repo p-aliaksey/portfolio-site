@@ -115,6 +115,10 @@ jobs:
         run: |
           sed -i "s/YOUR_VM_IP/${{ steps.ip.outputs.vm_ip }}/" infra/ansible/inventory.ini
       - name: Run Ansible playbook
+        env:
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           ansible-playbook -i infra/ansible/inventory.ini infra/ansible/site.yml
 
