@@ -1,6 +1,6 @@
 services:
   app:
-    image: {{ app_image | default('ghcr.io/' + github_repository + ':latest') }}
+    image: "{{ (app_image | default('ghcr.io/' ~ github_repository ~ ':latest')) | string }}"
     container_name: app
     environment:
       - PORT=8000
@@ -17,7 +17,7 @@ services:
       - app
   prometheus:
     image: prom/prometheus:latest
-    container_name: prometheus
+    container_name: prom/prometheus
     volumes:
       - ./infra/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
