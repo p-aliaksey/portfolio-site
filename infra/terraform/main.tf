@@ -59,6 +59,27 @@ resource "yandex_vpc_security_group" "sg" {
     v4_cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    protocol       = "TCP"
+    description    = "Prometheus"
+    port           = 9090
+    v4_cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    protocol       = "TCP"
+    description    = "Grafana"
+    port           = 3000
+    v4_cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    protocol       = "TCP"
+    description    = "Loki"
+    port           = 3100
+    v4_cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     protocol       = "ANY"
     description    = "ALL"
