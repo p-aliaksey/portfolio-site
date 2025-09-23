@@ -45,5 +45,5 @@ docker-compose.yml
 ```
 
 License
-MITЫ
-v_8
+MIT
+v_9

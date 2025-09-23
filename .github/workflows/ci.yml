@@ -9,9 +9,13 @@ on:
     types: [published]
   workflow_dispatch: {}
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   infra:
-    if: ${{ secrets.APPLY_INFRA == 'true' }}
+    if: ${{ secrets.APPLY_INFRA && secrets.APPLY_INFRA == 'true' }}
     runs-on: ubuntu-latest
     outputs:
       public_ip: ${{ steps.tf-output.outputs.public_ip }}
@@ -41,9 +45,6 @@ jobs:
           echo "public_ip=$(terraform output -raw public_ip)" >> $GITHUB_OUTPUT
   build-and-push:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
       - uses: actions/checkout@v4
       - name: Set up QEMU
@@ -65,7 +66,8 @@ jobs:
           file: Dockerfile
 
   deploy:
-    needs: [build-and-push, infra]
+    needs: [build-and-push]
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -83,7 +85,10 @@ jobs:
         id: ip
         shell: bash
         run: |
-          VM_IP="${{ needs.infra.outputs.public_ip }}"
+          VM_IP=""
+          if [ "${{ needs.infra.result }}" = "success" ]; then
+            VM_IP="${{ needs.infra.outputs.public_ip }}"
+          fi
           if [ -z "$VM_IP" ]; then VM_IP="${{ secrets.VM_PUBLIC_IP }}"; fi
           if [ -z "$VM_IP" ]; then echo "::error::VM IP is empty. Set secret VM_PUBLIC_IP or enable Terraform job."; exit 1; fi
           echo "vm_ip=$VM_IP" >> $GITHUB_OUTPUT
