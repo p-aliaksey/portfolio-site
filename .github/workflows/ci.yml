@@ -46,6 +46,8 @@ jobs:
           TF_VAR_ssh_user: ${{ secrets.SSH_USER }}
           TF_VAR_public_ssh_key: ${{ secrets.PUBLIC_SSH_KEY }}
           TF_VAR_ubuntu_image_id: ${{ secrets.UBUNTU_IMAGE_ID }}
+          TF_VAR_vpc_network_id: ${{ secrets.VPC_NETWORK_ID }}
+          TF_VAR_vpc_subnet_id: ${{ secrets.VPC_SUBNET_ID }}
         run: |
           terraform init -input=false
           terraform apply -auto-approve -input=false
@@ -54,7 +56,11 @@ jobs:
         if: ${{ env.APPLY_INFRA == 'true' }}
         run: |
           cd infra/terraform
-          echo "public_ip=$(terraform output -raw public_ip)" >> $GITHUB_OUTPUT
+          if terraform output -raw public_ip >/dev/null 2>&1; then
+            echo "public_ip=$(terraform output -raw public_ip)" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::Terraform output 'public_ip' not found. Check apply logs."
+          fi
   build-and-push:
     runs-on: ubuntu-latest
     steps:
@@ -94,7 +100,7 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Add host key to known_hosts
         run: |
-          if [ -z "${{ needs.infra.outputs.public_ip }}" ]; then echo "::error::Terraform did not output public_ip. Ensure APPLY_INFRA=true and YC_* secrets set"; exit 1; fi
+          if [ -z "${{ needs.infra.outputs.public_ip }}" ]; then echo "::error::Terraform did not output public_ip. Ensure APPLY_INFRA=true and YC_* secrets set or set VPC_NETWORK_ID/VPC_SUBNET_ID. See infra job logs."; exit 1; fi
           mkdir -p ~/.ssh
           ssh-keyscan -H "${{ needs.infra.outputs.public_ip }}" -p 22 >> ~/.ssh/known_hosts
       - name: Update inventory with VM IP
