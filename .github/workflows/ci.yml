@@ -46,6 +46,10 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Add host key to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VM_PUBLIC_IP }} >> ~/.ssh/known_hosts
       - name: Update inventory with VM IP
         run: |
           sed -i "s/YOUR_VM_IP/${{ secrets.VM_PUBLIC_IP }}/" infra/ansible/inventory.ini
