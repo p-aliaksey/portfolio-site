@@ -15,16 +15,46 @@
     dest: /opt/devops-portfolio/infra/nginx/
     mode: '0644'
 
-- name: Upload monitoring configs (Prometheus, Grafana)
+- name: Ensure monitoring directories exist
+  file:
+    path: "/opt/devops-portfolio/infra/monitoring/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - prometheus
+    - grafana
+
+- name: Upload Prometheus config
   copy:
-    src: ../../../../infra/monitoring/
-    dest: /opt/devops-portfolio/infra/monitoring/
+    src: ../../../../infra/monitoring/prometheus/prometheus.yml
+    dest: /opt/devops-portfolio/infra/monitoring/prometheus/prometheus.yml
     mode: '0644'
 
-- name: Upload logging configs (Loki, Promtail)
+- name: Upload Grafana datasources config
   copy:
-    src: ../../../../infra/logging/
-    dest: /opt/devops-portfolio/infra/logging/
+    src: ../../../../infra/monitoring/grafana/datasources.yml
+    dest: /opt/devops-portfolio/infra/monitoring/grafana/datasources.yml
+    mode: '0644'
+
+- name: Ensure logging directories exist
+  file:
+    path: "/opt/devops-portfolio/infra/logging/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - loki
+    - promtail
+
+- name: Upload Loki config
+  copy:
+    src: ../../../../infra/logging/loki/loki-config.yml
+    dest: /opt/devops-portfolio/infra/logging/loki/loki-config.yml
+    mode: '0644'
+
+- name: Upload Promtail config
+  copy:
+    src: ../../../../infra/logging/promtail/promtail-config.yml
+    dest: /opt/devops-portfolio/infra/logging/promtail/promtail-config.yml
     mode: '0644'
 
 - name: Login to GHCR (optional)
