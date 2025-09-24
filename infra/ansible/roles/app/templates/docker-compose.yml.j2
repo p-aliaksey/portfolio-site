@@ -25,14 +25,14 @@ services:
       - ./infra/monitoring/prometheus:/etc/prometheus:ro
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--web.external-url=/prometheus"
+      - "--web.external-url=https://{{ domain_name }}/prometheus"
       - "--web.route-prefix=/prometheus"
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD={{ grafana_admin_password | default('admin') }}
-      - GF_SERVER_ROOT_URL=/grafana
+      - GF_SERVER_ROOT_URL=https://{{ domain_name }}/grafana
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
     volumes:
       - grafana-data:/var/lib/grafana
