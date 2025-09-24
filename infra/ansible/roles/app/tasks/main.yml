@@ -75,10 +75,17 @@
     project_src: /opt/devops-portfolio
     pull: always
 
+- name: Remove stale nginx container (if any)
+  community.docker.docker_container:
+    name: nginx
+    state: absent
+    force_kill: true
+
 - name: Start stack (http only until certs)
   community.docker.docker_compose_v2:
     project_src: /opt/devops-portfolio
     state: present
+    remove_orphans: true
 
 - name: Obtain/renew certificates (webroot)
   community.docker.docker_compose_v2:
