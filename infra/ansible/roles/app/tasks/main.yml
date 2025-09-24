@@ -90,9 +90,10 @@
 - name: Issue certificate if not exists
   shell: >-
     docker run --rm \
+    --entrypoint /bin/sh \
     -v letsencrypt:/etc/letsencrypt \
     -v certbot-www:/var/www/certbot \
-    certbot/certbot sh -c "test -f /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem || certbot certonly --agree-tos --email {{ letsencrypt_email }} --webroot -w /var/www/certbot -d {{ domain_name }}"
+    certbot/certbot -c "test -f /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem || certbot certonly --agree-tos --email {{ letsencrypt_email }} --webroot -w /var/www/certbot -d {{ domain_name }}"
   args:
     executable: /bin/bash
 
