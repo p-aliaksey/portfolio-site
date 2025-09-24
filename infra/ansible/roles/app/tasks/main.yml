@@ -91,7 +91,7 @@
   community.docker.docker_container:
     name: certbot_once
     image: certbot/certbot:latest
-    auto_remove: true
+    auto_remove: false
     entrypoint: /bin/sh
     command: -c "test -f /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem || certbot certonly --agree-tos --email {{ letsencrypt_email }} --non-interactive --webroot -w /var/www/certbot -d {{ domain_name }}"
     volumes:
@@ -99,6 +99,12 @@
       - letsencrypt:/etc/letsencrypt
     pull: yes
     detach: false
+    state: started
+
+- name: Remove certbot_once container
+  community.docker.docker_container:
+    name: certbot_once
+    state: absent
 
 - name: Reload Nginx to pick up certs
   command: docker exec nginx nginx -s reload
