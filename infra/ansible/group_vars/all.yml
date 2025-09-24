@@ -5,3 +5,4 @@ domain_name: pishchik-dev.tech
 letsencrypt_email: admin2@1soft.by
 ghcr_username: "{{ lookup('env','GHCR_USERNAME') | default(omit, true) }}"
 ghcr_token: "{{ lookup('env','GHCR_TOKEN') | default(omit, true) }}"
+enable_https: false
