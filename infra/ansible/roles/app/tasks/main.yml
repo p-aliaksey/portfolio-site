@@ -88,14 +88,17 @@
     state: present
 
 - name: Issue certificate if not exists
-  shell: >-
-    docker run --rm \
-    --entrypoint /bin/sh \
-    -v letsencrypt:/etc/letsencrypt \
-    -v certbot-www:/var/www/certbot \
-    certbot/certbot -c "test -f /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem || certbot certonly --agree-tos --email {{ letsencrypt_email }} --webroot -w /var/www/certbot -d {{ domain_name }}"
-  args:
-    executable: /bin/bash
+  community.docker.docker_container:
+    name: certbot_once
+    image: certbot/certbot:latest
+    auto_remove: true
+    entrypoint: /bin/sh
+    command: -c "test -f /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem || certbot certonly --agree-tos --email {{ letsencrypt_email }} --non-interactive --webroot -w /var/www/certbot -d {{ domain_name }}"
+    volumes:
+      - certbot-www:/var/www/certbot
+      - letsencrypt:/etc/letsencrypt
+    pull: yes
+    detach: false
 
 - name: Reload Nginx to pick up certs
   command: docker exec nginx nginx -s reload
