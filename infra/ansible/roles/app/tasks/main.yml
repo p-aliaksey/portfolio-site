@@ -88,16 +88,13 @@
     state: present
 
 - name: Issue certificate if not exists
-  command: >-
+  shell: >-
     docker run --rm \
     -v letsencrypt:/etc/letsencrypt \
     -v certbot-www:/var/www/certbot \
-    certbot/certbot certonly --agree-tos --email {{ letsencrypt_email }} \
-    --webroot -w /var/www/certbot -d {{ domain_name }}
+    certbot/certbot sh -c "test -f /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem || certbot certonly --agree-tos --email {{ letsencrypt_email }} --webroot -w /var/www/certbot -d {{ domain_name }}"
   args:
-    warn: false
+    executable: /bin/bash
 
 - name: Reload Nginx to pick up certs
   command: docker exec nginx nginx -s reload
-  args:
-    warn: false
