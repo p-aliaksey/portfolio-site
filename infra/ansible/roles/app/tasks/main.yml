@@ -14,6 +14,7 @@
     path: /opt/devops-portfolio/infra/nginx/webroot
     state: directory
     mode: '0755'
+  when: enable_https | default(false) | bool
 
 - name: Upload Nginx config (HTTP only)
   template:
@@ -118,6 +119,7 @@
 
 - name: Create ACME health file in webroot
   command: docker exec nginx sh -c 'mkdir -p /var/www/certbot/.well-known/acme-challenge && echo ok > /var/www/certbot/.well-known/acme-challenge/health'
+  when: enable_https | default(false) | bool
 
 - name: Verify ACME health over domain
   uri:
@@ -128,6 +130,7 @@
   retries: 10
   delay: 6
   until: acme_health.status == 200 and acme_health.content is search('ok')
+  when: enable_https | default(false) | bool
 
 - name: Obtain/renew certificates (webroot)
   community.docker.docker_compose_v2:
@@ -135,17 +138,21 @@
     services:
       - certbot
     state: present
+  when: enable_https | default(false) | bool
 
 - name: Issue certificate inside certbot service if not exists
   command: >-
     docker compose -f /opt/devops-portfolio/docker-compose.yml exec -T certbot sh -lc
     "test -f /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem || certbot certonly --agree-tos --email {{ letsencrypt_email }} --non-interactive --webroot -w /var/www/certbot -d {{ domain_name }}"
+  when: enable_https | default(false) | bool
 
 - name: Upload Nginx config (HTTPS)
   template:
     src: ../templates/nginx-default.conf.j2
     dest: /opt/devops-portfolio/infra/nginx/default.conf
     mode: '0644'
+  when: enable_https | default(false) | bool
 
 - name: Reload Nginx to pick up certs
   command: docker exec nginx nginx -s reload
+  when: enable_https | default(false) | bool
