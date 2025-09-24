@@ -15,9 +15,9 @@
     state: directory
     mode: '0755'
 
-- name: Upload Nginx config (HTTPS)
+- name: Upload Nginx config (HTTP only)
   template:
-    src: ../templates/nginx-default.conf.j2
+    src: ../templates/nginx-http.conf.j2
     dest: /opt/devops-portfolio/infra/nginx/default.conf
     mode: '0644'
 
@@ -105,6 +105,12 @@
   community.docker.docker_container:
     name: certbot_once
     state: absent
+
+- name: Upload Nginx config (HTTPS)
+  template:
+    src: ../templates/nginx-default.conf.j2
+    dest: /opt/devops-portfolio/infra/nginx/default.conf
+    mode: '0644'
 
 - name: Reload Nginx to pick up certs
   command: docker exec nginx nginx -s reload
