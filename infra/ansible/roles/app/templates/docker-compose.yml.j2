@@ -36,13 +36,13 @@ services:
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./infra/monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./infra/monitoring/grafana:/etc/grafana/provisioning/datasources:ro
   loki:
     image: grafana/loki:2.9.8
     container_name: loki
     command: ["-config.file=/etc/loki/config.yml"]
     volumes:
-      - ./infra/logging/loki/loki-config.yml:/etc/loki/config.yml:ro
+      - ./infra/logging/loki:/etc/loki:ro
   promtail:
     image: grafana/promtail:2.9.8
     container_name: promtail
