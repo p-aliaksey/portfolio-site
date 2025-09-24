@@ -114,24 +114,10 @@
       - certbot
     state: present
 
-- name: Issue certificate if not exists
-  community.docker.docker_container:
-    name: certbot_once
-    image: certbot/certbot:latest
-    auto_remove: false
-    entrypoint: /bin/sh
-    command: -c "test -f /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem || certbot certonly --agree-tos --email {{ letsencrypt_email }} --non-interactive --webroot -w /var/www/certbot -d {{ domain_name }}"
-    volumes:
-      - certbot-www:/var/www/certbot
-      - letsencrypt:/etc/letsencrypt
-    pull: yes
-    detach: false
-    state: started
-
-- name: Remove certbot_once container
-  community.docker.docker_container:
-    name: certbot_once
-    state: absent
+- name: Issue certificate inside certbot service if not exists
+  command: >-
+    docker compose -f /opt/devops-portfolio/docker-compose.yml exec -T certbot sh -lc
+    "test -f /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem || certbot certonly --agree-tos --email {{ letsencrypt_email }} --non-interactive --webroot -w /var/www/certbot -d {{ domain_name }}"
 
 - name: Upload Nginx config (HTTPS)
   template:
