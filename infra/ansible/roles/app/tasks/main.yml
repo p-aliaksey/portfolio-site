@@ -87,6 +87,26 @@
     state: present
     remove_orphans: true
 
+- name: Wait for Nginx to listen on 80
+  wait_for:
+    host: 127.0.0.1
+    port: 80
+    delay: 2
+    timeout: 60
+
+- name: Create ACME health file in webroot
+  command: docker exec nginx sh -c 'mkdir -p /var/www/certbot/.well-known/acme-challenge && echo ok > /var/www/certbot/.well-known/acme-challenge/health'
+
+- name: Verify ACME health over domain
+  uri:
+    url: "http://{{ domain_name }}/.well-known/acme-challenge/health"
+    return_content: true
+    status_code: 200
+  register: acme_health
+  retries: 10
+  delay: 6
+  until: acme_health.status == 200 and acme_health.content is search('ok')
+
 - name: Obtain/renew certificates (webroot)
   community.docker.docker_compose_v2:
     project_src: /opt/devops-portfolio
