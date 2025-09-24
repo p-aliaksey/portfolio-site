@@ -30,6 +30,17 @@
     - prometheus
     - grafana
 
+- name: Check if grafana datasources.yml is a directory
+  stat:
+    path: /opt/devops-portfolio/infra/monitoring/grafana/datasources.yml
+  register: gf_ds
+
+- name: Remove wrong grafana datasources.yml directory
+  file:
+    path: /opt/devops-portfolio/infra/monitoring/grafana/datasources.yml
+    state: absent
+  when: gf_ds.stat.isdir is defined and gf_ds.stat.isdir
+
 - name: Upload Prometheus config
   copy:
     src: ../../../../infra/monitoring/prometheus/prometheus.yml
@@ -50,6 +61,17 @@
   loop:
     - loki
     - promtail
+
+- name: Check if loki config is a directory
+  stat:
+    path: /opt/devops-portfolio/infra/logging/loki/loki-config.yml
+  register: loki_cfg
+
+- name: Remove wrong loki config directory
+  file:
+    path: /opt/devops-portfolio/infra/logging/loki/loki-config.yml
+    state: absent
+  when: loki_cfg.stat.isdir is defined and loki_cfg.stat.isdir
 
 - name: Upload Loki config
   copy:
