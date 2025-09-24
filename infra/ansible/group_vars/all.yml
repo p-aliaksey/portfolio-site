@@ -1,7 +1,7 @@
 github_repository: "{{ lookup('env','GITHUB_REPOSITORY') | default('owner/repo', true) }}"
 app_image: "{{ 'ghcr.io/' ~ (lookup('env','GITHUB_REPOSITORY') | default('owner/repo', true)) ~ ':latest' }}"
 grafana_admin_password: admin
-domain_name: example.com
-letsencrypt_email: admin@example.com
+domain_name: pishchik-dev.tech
+letsencrypt_email: admin2@1soft.by
 ghcr_username: "{{ lookup('env','GHCR_USERNAME') | default(omit, true) }}"
 ghcr_token: "{{ lookup('env','GHCR_TOKEN') | default(omit, true) }}"
