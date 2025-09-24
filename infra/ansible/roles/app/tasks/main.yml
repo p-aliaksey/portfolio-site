@@ -9,10 +9,16 @@
     src: ../templates/docker-compose.yml.j2
     dest: /opt/devops-portfolio/docker-compose.yml
 
-- name: Upload Nginx config
-  copy:
-    src: ../../../../infra/nginx/
-    dest: /opt/devops-portfolio/infra/nginx/
+- name: Ensure Nginx webroot for ACME exists
+  file:
+    path: /opt/devops-portfolio/infra/nginx/webroot
+    state: directory
+    mode: '0755'
+
+- name: Upload Nginx config (HTTPS)
+  template:
+    src: ../templates/nginx-default.conf.j2
+    dest: /opt/devops-portfolio/infra/nginx/default.conf
     mode: '0644'
 
 - name: Ensure monitoring directories exist
@@ -69,7 +75,29 @@
     project_src: /opt/devops-portfolio
     pull: always
 
-- name: Start stack
+- name: Start stack (http only until certs)
   community.docker.docker_compose_v2:
     project_src: /opt/devops-portfolio
     state: present
+
+- name: Obtain/renew certificates (webroot)
+  community.docker.docker_compose_v2:
+    project_src: /opt/devops-portfolio
+    services:
+      - certbot
+    state: present
+
+- name: Issue certificate if not exists
+  command: >-
+    docker run --rm \
+    -v letsencrypt:/etc/letsencrypt \
+    -v certbot-www:/var/www/certbot \
+    certbot/certbot certonly --agree-tos --email {{ letsencrypt_email }} \
+    --webroot -w /var/www/certbot -d {{ domain_name }}
+  args:
+    warn: false
+
+- name: Reload Nginx to pick up certs
+  command: docker exec nginx nginx -s reload
+  args:
+    warn: false
