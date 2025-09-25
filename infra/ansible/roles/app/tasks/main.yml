@@ -165,6 +165,24 @@
   loop: "{{ container_logs.results | default([]) }}"
   when: item is defined
 
+- name: Show commands to check logs manually
+  debug:
+    msg: |
+      To check container logs manually, run these commands on the server:
+      - docker logs grafana
+      - docker logs loki
+      - docker logs prometheus
+      - docker logs nginx
+      - docker logs app
+      - docker logs promtail
+      
+      To check container status:
+      - docker ps -a
+      
+      To check if containers are running:
+      - docker inspect grafana | grep -A 5 '"State"'
+      - docker inspect loki | grep -A 5 '"State"'
+
 - name: Wait for Nginx to listen on 80
   wait_for:
     host: 127.0.0.1
