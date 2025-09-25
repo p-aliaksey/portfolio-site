@@ -19,7 +19,7 @@ services:
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
-      - ./infra/monitoring/prometheus:/etc/prometheus:ro
+      - ./infra/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--web.enable-lifecycle"
@@ -62,7 +62,7 @@ services:
     container_name: loki
     command: ["-config.file=/etc/loki/config.yml"]
     volumes:
-      - ./infra/logging/loki:/etc/loki:ro
+      - ./infra/logging/loki/loki-config.yml:/etc/loki/config.yml:ro
   promtail:
     image: grafana/promtail:2.9.8
     container_name: promtail

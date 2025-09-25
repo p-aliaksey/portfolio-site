@@ -111,6 +111,25 @@
     remove_orphans: true
     recreate: always
 
+- name: Check Nginx container status
+  community.docker.docker_container_info:
+    name: nginx
+  register: nginx_status
+
+- name: Display Nginx container status
+  debug:
+    var: nginx_status
+
+- name: Check Nginx logs if container is running
+  command: docker logs nginx
+  register: nginx_logs
+  when: nginx_status.exists and nginx_status.container.State.Running
+
+- name: Display Nginx logs
+  debug:
+    var: nginx_logs
+  when: nginx_logs is defined
+
 - name: Wait for Nginx to listen on 80
   wait_for:
     host: 127.0.0.1
