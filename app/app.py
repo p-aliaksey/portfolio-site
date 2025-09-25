@@ -83,7 +83,14 @@ def create_app() -> Flask:
             containers = []
             for line in result.stdout.strip().split('\n'):
                 if line:
-                    containers.append(json.loads(line))
+                    try:
+                        container = json.loads(line)
+                        # Добавляем дополнительную информацию
+                        container['status_icon'] = '🟢' if container.get('State') == 'running' else '🔴'
+                        container['status_text'] = 'UP' if container.get('State') == 'running' else 'DOWN'
+                        containers.append(container)
+                    except json.JSONDecodeError:
+                        continue
             return {"containers": containers}
         except Exception as e:
             return {"error": str(e), "containers": []}

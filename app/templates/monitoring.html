@@ -59,14 +59,23 @@
             <div class="card" style="margin-top: 32px">
                 <h3>🖥️ Системная информация</h3>
                 <div id="system-info">
-                    <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-                        <div style="flex: 1;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px;">
+                        <div>
                             <h4>💾 Использование диска</h4>
-                            <div id="disk-info">Загрузка...</div>
+                            <div id="disk-info">
+                                <div style="background: #f0f0f0; border-radius: 10px; height: 20px; margin: 10px 0; overflow: hidden;">
+                                    <div id="disk-bar" style="background: linear-gradient(90deg, #4CAF50, #8BC34A); height: 100%; width: 0%; transition: width 1s ease-in-out; border-radius: 10px;"></div>
+                                </div>
+                                <div id="disk-text">Загрузка...</div>
+                            </div>
                         </div>
-                        <div style="flex: 1;">
+                        <div>
                             <h4>🐳 Docker контейнеры</h4>
-                            <div id="docker-info">Загрузка...</div>
+                            <div id="docker-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                                <div style="text-align: center; padding: 10px; background: #f8f9fa; border-radius: 8px; animation: pulse 2s infinite;">
+                                    Загрузка...
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -74,6 +83,79 @@
             
         </section>
     </main>
+    
+    <style>
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .container-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 5px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .container-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        
+        .container-card.running {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        
+        .container-card.stopped {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        }
+        
+        .container-name {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .container-status {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .disk-bar-container {
+            position: relative;
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .disk-bar {
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            height: 100%;
+            transition: width 1s ease-in-out;
+            border-radius: 10px;
+        }
+        
+        .disk-bar.warning {
+            background: linear-gradient(90deg, #FF9800, #FFC107);
+        }
+        
+        .disk-bar.danger {
+            background: linear-gradient(90deg, #f44336, #e91e63);
+        }
+    </style>
     
     <script>
         // Загрузка системной информации
@@ -83,8 +165,24 @@
                 const diskResponse = await fetch('/api/system/disk');
                 const diskData = await diskResponse.json();
                 
-                const diskInfo = document.getElementById('disk-info');
-                diskInfo.innerHTML = `
+                const diskBar = document.getElementById('disk-bar');
+                const diskText = document.getElementById('disk-text');
+                
+                // Анимируем полоску
+                setTimeout(() => {
+                    diskBar.style.width = diskData.percent_used + '%';
+                    
+                    // Меняем цвет в зависимости от использования
+                    if (diskData.percent_used > 80) {
+                        diskBar.className = 'disk-bar danger';
+                    } else if (diskData.percent_used > 60) {
+                        diskBar.className = 'disk-bar warning';
+                    } else {
+                        diskBar.className = 'disk-bar';
+                    }
+                }, 100);
+                
+                diskText.innerHTML = `
                     <p><strong>Использовано:</strong> ${diskData.percent_used}%</p>
                     <p><strong>Свободно:</strong> ${Math.round(diskData.free / 1024 / 1024 / 1024)} GB</p>
                     <p><strong>Всего:</strong> ${Math.round(diskData.total / 1024 / 1024 / 1024)} GB</p>
@@ -96,20 +194,37 @@
                 
                 const dockerInfo = document.getElementById('docker-info');
                 if (dockerData.containers && dockerData.containers.length > 0) {
-                    let containersHtml = '<ul style="margin: 0; padding-left: 20px;">';
-                    dockerData.containers.forEach(container => {
-                        const status = container.State === 'running' ? '🟢' : '🔴';
-                        containersHtml += `<li>${status} ${container.Names} (${container.Status})</li>`;
+                    let containersHtml = '';
+                    dockerData.containers.forEach((container, index) => {
+                        const statusClass = container.State === 'running' ? 'running' : 'stopped';
+                        const statusIcon = container.status_icon || (container.State === 'running' ? '🟢' : '🔴');
+                        const statusText = container.status_text || (container.State === 'running' ? 'UP' : 'DOWN');
+                        
+                        containersHtml += `
+                            <div class="container-card ${statusClass}" style="animation-delay: ${index * 0.1}s;">
+                                <div class="container-name">${container.Names || 'Unknown'}</div>
+                                <div class="container-status">${statusIcon} ${statusText}</div>
+                            </div>
+                        `;
                     });
-                    containersHtml += '</ul>';
                     dockerInfo.innerHTML = containersHtml;
                 } else {
-                    dockerInfo.innerHTML = '<p>Контейнеры не найдены</p>';
+                    dockerInfo.innerHTML = `
+                        <div class="container-card stopped">
+                            <div class="container-name">Ошибка</div>
+                            <div class="container-status">Контейнеры не найдены</div>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 console.error('Ошибка загрузки системной информации:', error);
-                document.getElementById('disk-info').innerHTML = '<p>Ошибка загрузки</p>';
-                document.getElementById('docker-info').innerHTML = '<p>Ошибка загрузки</p>';
+                document.getElementById('disk-text').innerHTML = '<p style="color: red;">Ошибка загрузки</p>';
+                document.getElementById('docker-info').innerHTML = `
+                    <div class="container-card stopped">
+                        <div class="container-name">Ошибка</div>
+                        <div class="container-status">Не удалось загрузить данные</div>
+                    </div>
+                `;
             }
         }
         
