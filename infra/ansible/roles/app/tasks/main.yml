@@ -113,6 +113,22 @@
   debug:
     var: nginx_config_test
 
+- name: Check if all required config files exist
+  stat:
+    path: "/opt/devops-portfolio/{{ item }}"
+  register: config_files
+  loop:
+    - infra/nginx/nginx-http.conf
+    - infra/monitoring/prometheus/prometheus.yml
+    - infra/monitoring/grafana/datasources.yml
+    - infra/logging/loki/loki-config.yml
+    - infra/logging/promtail/promtail-config.yml
+
+- name: Display config files status
+  debug:
+    msg: "{{ item.item }} exists: {{ item.stat.exists }}"
+  loop: "{{ config_files.results }}"
+
 - name: Start stack (http only until certs)
   community.docker.docker_compose_v2:
     project_src: /opt/devops-portfolio
@@ -120,34 +136,34 @@
     remove_orphans: true
     recreate: always
 
-- name: Check Nginx container status
+- name: Check all container statuses
   community.docker.docker_container_info:
-    name: nginx
-  register: nginx_status
+    name: "{{ item }}"
+  register: container_status
+  loop:
+    - nginx
+    - app
+    - prometheus
+    - grafana
+    - loki
+    - promtail
 
-- name: Display Nginx container status
+- name: Display all container statuses
   debug:
-    var: nginx_status
+    var: container_status
 
-- name: Check Nginx logs if container is running
-  command: docker logs nginx
-  register: nginx_logs
-  when: nginx_status.exists and nginx_status.container.State.Running
+- name: Check container logs
+  command: docker logs "{{ item.item }}"
+  register: container_logs
+  loop: "{{ container_status.results }}"
+  when: item.exists
+  ignore_errors: true
 
-- name: Check Nginx logs if container is not running
-  command: docker logs nginx
-  register: nginx_logs_crashed
-  when: nginx_status.exists and not nginx_status.container.State.Running
-
-- name: Display Nginx logs (running)
+- name: Display container logs
   debug:
-    var: nginx_logs
-  when: nginx_logs is defined
-
-- name: Display Nginx logs (crashed)
-  debug:
-    var: nginx_logs_crashed
-  when: nginx_logs_crashed is defined
+    msg: "{{ item.item }} logs: {{ item.stdout_lines | default(['No logs']) }}"
+  loop: "{{ container_logs.results | default([]) }}"
+  when: item is defined
 
 - name: Wait for Nginx to listen on 80
   wait_for:
