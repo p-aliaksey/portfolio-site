@@ -104,6 +104,15 @@
     state: absent
     force_kill: true
 
+- name: Test Nginx configuration syntax
+  command: docker run --rm -v /opt/devops-portfolio/infra/nginx/nginx-http.conf:/etc/nginx/conf.d/default.conf:ro nginx:1.27-alpine nginx -t
+  register: nginx_config_test
+  ignore_errors: true
+
+- name: Display Nginx config test result
+  debug:
+    var: nginx_config_test
+
 - name: Start stack (http only until certs)
   community.docker.docker_compose_v2:
     project_src: /opt/devops-portfolio
@@ -125,10 +134,20 @@
   register: nginx_logs
   when: nginx_status.exists and nginx_status.container.State.Running
 
-- name: Display Nginx logs
+- name: Check Nginx logs if container is not running
+  command: docker logs nginx
+  register: nginx_logs_crashed
+  when: nginx_status.exists and not nginx_status.container.State.Running
+
+- name: Display Nginx logs (running)
   debug:
     var: nginx_logs
   when: nginx_logs is defined
+
+- name: Display Nginx logs (crashed)
+  debug:
+    var: nginx_logs_crashed
+  when: nginx_logs_crashed is defined
 
 - name: Wait for Nginx to listen on 80
   wait_for:
