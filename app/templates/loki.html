@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loki - Система логирования</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: #f8fafc;
+            color: #334155;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+        .api-info {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .api-endpoint {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: inline-block;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .status.ready {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status.error {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        .description {
+            line-height: 1.6;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #3b82f6;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px 10px 10px 0;
+            transition: background 0.2s;
+        }
+        .button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Loki - Система логирования</h1>
+        
+        <div class="description">
+            <p><strong>Loki</strong> — это система логирования, разработанная Grafana Labs. Она собирает, хранит и индексирует логи от различных источников в вашей инфраструктуре.</p>
+            
+            <p>Loki работает через REST API и не имеет веб-интерфейса. Для работы с логами используйте Grafana или отправляйте запросы напрямую к API.</p>
+        </div>
+
+        <div class="api-info">
+            <h3>📡 API Endpoints</h3>
+            <p>Проверка статуса:</p>
+            <div class="api-endpoint">GET /loki/ready</div>
+            
+            <p>Поиск логов:</p>
+            <div class="api-endpoint">GET /loki/api/v1/query_range</div>
+            
+            <p>Получение меток:</p>
+            <div class="api-endpoint">GET /loki/api/v1/labels</div>
+            
+            <p>Получение значений меток:</p>
+            <div class="api-endpoint">GET /loki/api/v1/label/{name}/values</div>
+        </div>
+
+        <div id="status-info">
+            <h3>📊 Статус системы</h3>
+            <p>Проверка доступности Loki API...</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <a href="/grafana/" class="button">Открыть Grafana</a>
+            <a href="/prometheus/" class="button">Открыть Prometheus</a>
+            <a href="/" class="button">На главную</a>
+        </div>
+    </div>
+
+    <script>
+        // Проверяем статус Loki
+        fetch('/loki/ready')
+            .then(response => {
+                const statusDiv = document.getElementById('status-info');
+                if (response.ok) {
+                    statusDiv.innerHTML = `
+                        <h3>📊 Статус системы</h3>
+                        <span class="status ready">✅ Loki готов к работе</span>
+                        <p style="margin-top: 10px;">API доступен и отвечает на запросы.</p>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        <h3>📊 Статус системы</h3>
+                        <span class="status error">❌ Loki недоступен</span>
+                        <p style="margin-top: 10px;">API не отвечает. Проверьте статус контейнера.</p>
+                    `;
+                }
+            })
+            .catch(error => {
+                const statusDiv = document.getElementById('status-info');
+                statusDiv.innerHTML = `
+                    <h3>📊 Статус системы</h3>
+                    <span class="status error">❌ Ошибка подключения</span>
+                    <p style="margin-top: 10px;">Не удалось подключиться к Loki API: ${error.message}</p>
+                `;
+            });
+    </script>
+</body>
+</html>

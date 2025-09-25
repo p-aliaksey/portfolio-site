@@ -34,6 +34,11 @@ def create_app() -> Flask:
         # Redirect /query to /prometheus/ for Prometheus UI
         return redirect("/prometheus/", code=302)
 
+    @app.route("/loki")
+    def loki():
+        request_counter.labels(path="/loki").inc()
+        return render_template("loki.html")
+
     return app
 
 
