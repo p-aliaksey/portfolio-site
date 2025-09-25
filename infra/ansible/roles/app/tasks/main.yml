@@ -189,6 +189,30 @@
   debug:
     var: nginx_prometheus_test
 
+- name: Test Grafana connectivity
+  uri:
+    url: "http://localhost:3000/api/health"
+    method: GET
+    return_content: true
+  register: grafana_test
+  ignore_errors: true
+
+- name: Display Grafana test result
+  debug:
+    var: grafana_test
+
+- name: Test Nginx connectivity to Grafana
+  uri:
+    url: "http://localhost/grafana/api/health"
+    method: GET
+    return_content: true
+  register: nginx_grafana_test
+  ignore_errors: true
+
+- name: Display Nginx Grafana test result
+  debug:
+    var: nginx_grafana_test
+
 - name: Show commands to check logs manually
   debug:
     msg: |
@@ -211,11 +235,27 @@
       To test Prometheus directly:
       - curl http://localhost:9090/api/v1/query?query=up
       - curl http://localhost/prometheus/api/v1/query?query=up
+      
+      To test Grafana directly:
+      - curl http://localhost:3000/api/health
+      - curl http://localhost/grafana/api/health
+      
+      To test Loki directly:
+      - curl http://localhost:3100/ready
+      - curl http://localhost/loki/ready
 
 - name: Wait for Prometheus to listen on 9090
   wait_for:
     host: 127.0.0.1
     port: 9090
+    delay: 2
+    timeout: 30
+  ignore_errors: true
+
+- name: Wait for Grafana to listen on 3000
+  wait_for:
+    host: 127.0.0.1
+    port: 3000
     delay: 2
     timeout: 30
   ignore_errors: true
