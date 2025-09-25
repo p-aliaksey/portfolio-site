@@ -56,8 +56,69 @@
                 
             </div>
             
+            <div class="card" style="margin-top: 32px">
+                <h3>🖥️ Системная информация</h3>
+                <div id="system-info">
+                    <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                        <div style="flex: 1;">
+                            <h4>💾 Использование диска</h4>
+                            <div id="disk-info">Загрузка...</div>
+                        </div>
+                        <div style="flex: 1;">
+                            <h4>🐳 Docker контейнеры</h4>
+                            <div id="docker-info">Загрузка...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
         </section>
     </main>
+    
+    <script>
+        // Загрузка системной информации
+        async function loadSystemInfo() {
+            try {
+                // Загрузка информации о диске
+                const diskResponse = await fetch('/api/system/disk');
+                const diskData = await diskResponse.json();
+                
+                const diskInfo = document.getElementById('disk-info');
+                diskInfo.innerHTML = `
+                    <p><strong>Использовано:</strong> ${diskData.percent_used}%</p>
+                    <p><strong>Свободно:</strong> ${Math.round(diskData.free / 1024 / 1024 / 1024)} GB</p>
+                    <p><strong>Всего:</strong> ${Math.round(diskData.total / 1024 / 1024 / 1024)} GB</p>
+                `;
+                
+                // Загрузка информации о Docker
+                const dockerResponse = await fetch('/api/system/docker');
+                const dockerData = await dockerResponse.json();
+                
+                const dockerInfo = document.getElementById('docker-info');
+                if (dockerData.containers && dockerData.containers.length > 0) {
+                    let containersHtml = '<ul style="margin: 0; padding-left: 20px;">';
+                    dockerData.containers.forEach(container => {
+                        const status = container.State === 'running' ? '🟢' : '🔴';
+                        containersHtml += `<li>${status} ${container.Names} (${container.Status})</li>`;
+                    });
+                    containersHtml += '</ul>';
+                    dockerInfo.innerHTML = containersHtml;
+                } else {
+                    dockerInfo.innerHTML = '<p>Контейнеры не найдены</p>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки системной информации:', error);
+                document.getElementById('disk-info').innerHTML = '<p>Ошибка загрузки</p>';
+                document.getElementById('docker-info').innerHTML = '<p>Ошибка загрузки</p>';
+            }
+        }
+        
+        // Загружаем информацию при загрузке страницы
+        document.addEventListener('DOMContentLoaded', loadSystemInfo);
+        
+        // Обновляем каждые 30 секунд
+        setInterval(loadSystemInfo, 30000);
+    </script>
     
     <footer>
         <p>© 2025 DevOps Portfolio</p>

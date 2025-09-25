@@ -61,6 +61,32 @@ def create_app() -> Flask:
     def monitoring():
         request_counter.labels(path="/monitoring").inc()
         return render_template("monitoring.html")
+    
+    @app.route("/api/system/disk")
+    def system_disk():
+        import shutil
+        disk_usage = shutil.disk_usage('/')
+        return {
+            "total": disk_usage.total,
+            "used": disk_usage.used,
+            "free": disk_usage.free,
+            "percent_used": round((disk_usage.used / disk_usage.total) * 100, 2)
+        }
+    
+    @app.route("/api/system/docker")
+    def system_docker():
+        import subprocess
+        import json
+        try:
+            result = subprocess.run(['docker', 'ps', '--format', 'json'], 
+                                  capture_output=True, text=True, timeout=10)
+            containers = []
+            for line in result.stdout.strip().split('\n'):
+                if line:
+                    containers.append(json.loads(line))
+            return {"containers": containers}
+        except Exception as e:
+            return {"error": str(e), "containers": []}
 
     return app
 
