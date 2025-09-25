@@ -22,7 +22,7 @@ services:
       - ./infra/monitoring/prometheus:/etc/prometheus:ro
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--web.external-url=http://{{ domain_name }}/prometheus/"
+      - "--web.external-url=http://{{ domain_name }}/prometheus"
       - "--web.route-prefix=/prometheus"
   grafana:
     image: grafana/grafana:latest
