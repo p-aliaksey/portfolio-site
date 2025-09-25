@@ -22,7 +22,6 @@ services:
       - ./infra/monitoring/prometheus:/etc/prometheus:ro
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--web.route-prefix=/prometheus"
       - "--web.enable-lifecycle"
   grafana:
     image: grafana/grafana:latest
@@ -61,7 +60,7 @@ services:
   loki:
     image: grafana/loki:2.9.8
     container_name: loki
-    command: ["-config.file=/etc/loki/loki-config.yml"]
+    command: ["-config.file=/etc/loki/config.yml"]
     volumes:
       - ./infra/logging/loki:/etc/loki:ro
   promtail:
