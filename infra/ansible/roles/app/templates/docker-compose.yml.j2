@@ -22,7 +22,6 @@ services:
       - ./infra/monitoring/prometheus:/etc/prometheus:ro
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--web.route-prefix=/prometheus"
       - "--web.enable-lifecycle"
   grafana:
     image: grafana/grafana:latest
@@ -32,9 +31,10 @@ services:
       - GF_SERVER_ROOT_URL=http://{{ domain_name }}/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
       - GF_SERVER_DOMAIN={{ domain_name }}
-      - GF_SERVER_ENFORCE_DOMAIN=true
+      - GF_SERVER_ENFORCE_DOMAIN=false
       - GF_ANALYTICS_REPORTING_ENABLED=false
       - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      - GF_SERVER_ROUTER_LOGGING=true
     volumes:
       - grafana-data:/var/lib/grafana
       - ./infra/monitoring/grafana:/etc/grafana/provisioning/datasources:ro
