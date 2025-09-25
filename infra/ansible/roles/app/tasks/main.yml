@@ -17,9 +17,9 @@
   when: enable_https | default(false) | bool
 
 - name: Upload Nginx config (HTTP only)
-  template:
-    src: ../templates/nginx-http.conf.j2
-    dest: /opt/devops-portfolio/infra/nginx/default.conf
+  copy:
+    src: ../../../../infra/nginx/nginx-http.conf
+    dest: /opt/devops-portfolio/infra/nginx/nginx-http.conf
     mode: '0644'
 
 - name: Ensure monitoring directories exist
