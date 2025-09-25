@@ -109,6 +109,7 @@
     project_src: /opt/devops-portfolio
     state: present
     remove_orphans: true
+    recreate: always
 
 - name: Wait for Nginx to listen on 80
   wait_for:

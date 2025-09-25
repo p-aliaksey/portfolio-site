@@ -35,6 +35,15 @@ services:
       - GF_ANALYTICS_REPORTING_ENABLED=false
       - GF_ANALYTICS_CHECK_FOR_UPDATES=false
       - GF_SERVER_ROUTER_LOGGING=true
+      - GF_SERVER_READ_TIMEOUT=30s
+      - GF_SERVER_WRITE_TIMEOUT=30s
+      - GF_SERVER_ENABLE_GZIP=true
+      - GF_SERVER_PROTOCOL=http
+      - GF_SERVER_HTTP_PORT=3000
+      - GF_SERVER_DISABLE_ROUTER_LOGGING=false
+      - GF_SERVER_APP_MODE=production
+      - GF_SERVER_APP_ENV=production
+      - GF_SERVER_APP_DEBUG=false
     volumes:
       - grafana-data:/var/lib/grafana
       - ./infra/monitoring/grafana:/etc/grafana/provisioning/datasources:ro
