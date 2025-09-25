@@ -53,6 +53,7 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
       - ./infra/monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./infra/monitoring/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
       - ./infra/monitoring/grafana/dashboard.json:/etc/grafana/provisioning/dashboards/dashboard.json:ro
       - ./infra/monitoring/grafana/infrastructure-dashboard.json:/etc/grafana/provisioning/dashboards/infrastructure-dashboard.json:ro
     labels:

@@ -77,23 +77,60 @@ def create_app() -> Flask:
     def system_docker():
         import subprocess
         import json
+        import os
         try:
-            result = subprocess.run(['docker', 'ps', '--format', 'json'], 
-                                  capture_output=True, text=True, timeout=10)
+            # Проверяем доступность Docker socket
+            if not os.path.exists('/var/run/docker.sock'):
+                return {"error": "Docker socket not found", "containers": []}
+            
+            # Пробуем разные команды для получения информации о контейнерах
+            commands = [
+                ['docker', 'ps', '--format', 'json'],
+                ['docker', 'ps', '--format', '{{.Names}}\t{{.Status}}\t{{.State}}'],
+                ['docker', 'ps', '--no-trunc', '--format', 'table {{.Names}}\t{{.Status}}']
+            ]
+            
             containers = []
-            for line in result.stdout.strip().split('\n'):
-                if line:
-                    try:
-                        container = json.loads(line)
-                        # Добавляем дополнительную информацию
-                        container['status_icon'] = '🟢' if container.get('State') == 'running' else '🔴'
-                        container['status_text'] = 'UP' if container.get('State') == 'running' else 'DOWN'
-                        containers.append(container)
-                    except json.JSONDecodeError:
-                        continue
-            return {"containers": containers}
+            for cmd in commands:
+                try:
+                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+                    if result.returncode == 0 and result.stdout.strip():
+                        if cmd[2] == 'json':
+                            # JSON формат
+                            for line in result.stdout.strip().split('\n'):
+                                if line:
+                                    try:
+                                        container = json.loads(line)
+                                        container['status_icon'] = '🟢' if container.get('State') == 'running' else '🔴'
+                                        container['status_text'] = 'UP' if container.get('State') == 'running' else 'DOWN'
+                                        containers.append(container)
+                                    except json.JSONDecodeError:
+                                        continue
+                        else:
+                            # Текстовый формат
+                            lines = result.stdout.strip().split('\n')
+                            for line in lines[1:]:  # Пропускаем заголовок
+                                if line.strip():
+                                    parts = line.split('\t')
+                                    if len(parts) >= 2:
+                                        name = parts[0].strip()
+                                        status = parts[1].strip()
+                                        state = 'running' if 'Up' in status else 'stopped'
+                                        container = {
+                                            'Names': name,
+                                            'Status': status,
+                                            'State': state,
+                                            'status_icon': '🟢' if state == 'running' else '🔴',
+                                            'status_text': 'UP' if state == 'running' else 'DOWN'
+                                        }
+                                        containers.append(container)
+                        break
+                except Exception as e:
+                    continue
+            
+            return {"containers": containers, "debug": {"command_used": cmd if 'cmd' in locals() else "none"}}
         except Exception as e:
-            return {"error": str(e), "containers": []}
+            return {"error": str(e), "containers": [], "debug": {"exception": str(e)}}
 
     return app
 
