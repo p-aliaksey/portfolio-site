@@ -56,6 +56,11 @@ def create_app() -> Flask:
     def loki():
         request_counter.labels(path="/loki").inc()
         return render_template("loki.html")
+    
+    @app.route("/monitoring")
+    def monitoring():
+        request_counter.labels(path="/monitoring").inc()
+        return render_template("monitoring.html")
 
     return app
 

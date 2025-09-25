@@ -1,65 +1,30 @@
 {
   "id": null,
-  "title": "DevOps Portfolio - System Overview",
-  "tags": ["devops", "portfolio", "monitoring"],
+  "title": "Infrastructure Overview",
+  "tags": ["infrastructure", "system"],
   "style": "dark",
   "timezone": "browser",
   "panels": [
     {
       "id": 1,
-      "title": "🌐 HTTP Requests",
+      "title": "🐳 Docker Containers",
       "type": "stat",
       "targets": [
         {
-          "expr": "sum(http_requests_total)",
-          "legendFormat": "Total Requests"
+          "expr": "up{job=\"docker\"}",
+          "legendFormat": "Running Containers"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 100},
-              {"color": "red", "value": 500}
-            ]
-          },
-          "custom": {
-            "displayMode": "basic"
-          }
-        }
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 0,
-        "y": 0
-      }
-    },
-    {
-      "id": 2,
-      "title": "⏱️ Uptime",
-      "type": "stat",
-      "targets": [
-        {
-          "expr": "app_uptime_seconds",
-          "legendFormat": "Uptime"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s",
           "color": {
             "mode": "thresholds"
           },
           "thresholds": {
             "steps": [
               {"color": "red", "value": null},
-              {"color": "yellow", "value": 60},
-              {"color": "green", "value": 300}
+              {"color": "yellow", "value": 3},
+              {"color": "green", "value": 5}
             ]
           },
           "custom": {
@@ -69,32 +34,63 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 6,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "title": "📈 Prometheus Status",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "up{job=\"prometheus\"}",
+          "legendFormat": "Prometheus"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {"color": "red", "value": 0},
+              {"color": "green", "value": 1}
+            ]
+          },
+          "custom": {
+            "displayMode": "basic"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
         "y": 0
       }
     },
     {
       "id": 3,
-      "title": "💾 Memory Usage",
+      "title": "📊 Grafana Status",
       "type": "stat",
       "targets": [
         {
-          "expr": "process_resident_memory_bytes",
-          "legendFormat": "Resident Memory"
+          "expr": "up{job=\"grafana\"}",
+          "legendFormat": "Grafana"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "bytes",
           "color": {
             "mode": "thresholds"
           },
           "thresholds": {
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 50000000},
-              {"color": "red", "value": 100000000}
+              {"color": "red", "value": 0},
+              {"color": "green", "value": 1}
             ]
           },
           "custom": {
@@ -104,19 +100,19 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 12,
+        "w": 8,
+        "x": 16,
         "y": 0
       }
     },
     {
       "id": 4,
-      "title": "🔗 Active Connections",
+      "title": "📝 Loki Status",
       "type": "stat",
       "targets": [
         {
-          "expr": "app_active_connections",
-          "legendFormat": "Active Connections"
+          "expr": "up{job=\"loki\"}",
+          "legendFormat": "Loki"
         }
       ],
       "fieldConfig": {
@@ -126,9 +122,8 @@
           },
           "thresholds": {
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 5},
-              {"color": "red", "value": 10}
+              {"color": "red", "value": 0},
+              {"color": "green", "value": 1}
             ]
           },
           "custom": {
@@ -138,73 +133,105 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 18,
-        "y": 0
-      }
-    },
-    {
-      "id": 5,
-      "title": "📊 HTTP Requests by Path",
-      "type": "timeseries",
-      "targets": [
-        {
-          "expr": "rate(http_requests_total[5m])",
-          "legendFormat": "{{path}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "reqps",
-          "color": {
-            "mode": "palette-classic"
-          }
-        }
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
+        "w": 8,
         "x": 0,
         "y": 8
       }
     },
     {
-      "id": 6,
-      "title": "⚡ Response Time",
-      "type": "timeseries",
+      "id": 5,
+      "title": "🌐 Nginx Status",
+      "type": "stat",
       "targets": [
         {
-          "expr": "app_response_time_seconds",
-          "legendFormat": "{{path}}"
+          "expr": "up{job=\"nginx\"}",
+          "legendFormat": "Nginx"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {"color": "red", "value": 0},
+              {"color": "green", "value": 1}
+            ]
+          },
+          "custom": {
+            "displayMode": "basic"
           }
         }
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
+        "w": 8,
+        "x": 8,
+        "y": 8
+      }
+    },
+    {
+      "id": 6,
+      "title": "📱 App Status",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "up{job=\"flask-app\"}",
+          "legendFormat": "Flask App"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {"color": "red", "value": 0},
+              {"color": "green", "value": 1}
+            ]
+          },
+          "custom": {
+            "displayMode": "basic"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
         "y": 8
       }
     },
     {
       "id": 7,
-      "title": "🖥️ System Resources",
+      "title": "📊 Service Health Overview",
       "type": "timeseries",
       "targets": [
         {
-          "expr": "process_resident_memory_bytes",
-          "legendFormat": "Memory"
+          "expr": "up{job=\"docker\"}",
+          "legendFormat": "Docker: {{instance}}"
         },
         {
-          "expr": "process_cpu_seconds_total",
-          "legendFormat": "CPU Time"
+          "expr": "up{job=\"prometheus\"}",
+          "legendFormat": "Prometheus: {{instance}}"
+        },
+        {
+          "expr": "up{job=\"grafana\"}",
+          "legendFormat": "Grafana: {{instance}}"
+        },
+        {
+          "expr": "up{job=\"loki\"}",
+          "legendFormat": "Loki: {{instance}}"
+        },
+        {
+          "expr": "up{job=\"nginx\"}",
+          "legendFormat": "Nginx: {{instance}}"
+        },
+        {
+          "expr": "up{job=\"flask-app\"}",
+          "legendFormat": "Flask App: {{instance}}"
         }
       ],
       "fieldConfig": {
@@ -226,5 +253,5 @@
     "from": "now-1h",
     "to": "now"
   },
-  "refresh": "5s"
+  "refresh": "10s"
 }

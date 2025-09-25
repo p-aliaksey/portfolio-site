@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Мониторинг | DevOps Portfolio</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav>
+            <a class="brand" href="/">DevOps Portfolio</a>
+            <div class="links">
+                <a href="/about">О проекте</a>
+                <a href="/metrics">Метрики</a>
+                <a href="/monitoring">Мониторинг</a>
+            </div>
+        </nav>
+    </header>
+    
+    <main>
+        <section class="container" style="padding: 48px 24px">
+            <h1>Система мониторинга</h1>
+            <p class="lead">Инструменты для наблюдения за состоянием инфраструктуры и приложений</p>
+            
+            <div class="grid" style="margin-top: 32px">
+                <div class="card">
+                    <h3>📈 Grafana Dashboards</h3>
+                    <p><strong>Основной инструмент мониторинга</strong> с красивыми дашбордами и графиками. Показывает метрики приложения, системные ресурсы и статус сервисов.</p>
+                    <div style="margin-top: 16px">
+                        <a class="button" href="http://pishchik-dev.tech:3001/" target="_blank" rel="noopener">Открыть Grafana</a>
+                    </div>
+                    <p style="margin-top: 8px; font-size: 0.9em; color: #666;">
+                        <strong>Логин:</strong> admin | <strong>Пароль:</strong> admin
+                    </p>
+                </div>
+                
+                <div class="card">
+                    <h3>📊 Prometheus</h3>
+                    <p>Система сбора метрик и мониторинга. Собирает данные о производительности приложений и инфраструктуры. Полезен для отладки и анализа.</p>
+                    <div style="margin-top: 16px">
+                        <a class="button" href="http://pishchik-dev.tech:9090/" target="_blank" rel="noopener">Открыть Prometheus</a>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>📝 Loki</h3>
+                    <p>Система агрегации логов. Централизованный сбор и анализ логов приложений и сервисов. Интегрирован с Grafana.</p>
+                    <div style="margin-top: 16px">
+                        <a class="button" href="/loki/" target="_blank" rel="noopener">Открыть Loki</a>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>🔍 Сырые метрики</h3>
+                    <p>Прямой доступ к метрикам в формате Prometheus. Для разработчиков и отладки. Показывает все собранные метрики в текстовом виде.</p>
+                    <div style="margin-top: 16px">
+                        <a class="button alt" href="/metrics" target="_blank" rel="noopener">Просмотр метрик</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card" style="margin-top: 32px">
+                <h3>🔐 Доступ к системам мониторинга</h3>
+                <p><strong>Grafana:</strong> Логин: <code>admin</code>, Пароль: <code>admin</code></p>
+                <p><strong>Prometheus:</strong> Доступен без авторизации</p>
+                <p><strong>Loki:</strong> Доступен через веб-интерфейс</p>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>© 2025 DevOps Portfolio</p>
+    </footer>
+</body>
+</html>
