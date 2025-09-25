@@ -189,6 +189,18 @@
   debug:
     var: nginx_prometheus_test
 
+- name: Test App connectivity
+  uri:
+    url: "http://localhost:8000/"
+    method: GET
+    return_content: true
+  register: app_test
+  ignore_errors: true
+
+- name: Display App test result
+  debug:
+    var: app_test
+
 - name: Test Grafana connectivity
   uri:
     url: "http://localhost:3000/api/health"
@@ -213,6 +225,30 @@
   debug:
     var: nginx_grafana_test
 
+- name: Test Loki connectivity
+  uri:
+    url: "http://localhost:3100/ready"
+    method: GET
+    return_content: true
+  register: loki_test
+  ignore_errors: true
+
+- name: Display Loki test result
+  debug:
+    var: loki_test
+
+- name: Test Nginx connectivity to Loki
+  uri:
+    url: "http://localhost/loki/ready"
+    method: GET
+    return_content: true
+  register: nginx_loki_test
+  ignore_errors: true
+
+- name: Display Nginx Loki test result
+  debug:
+    var: nginx_loki_test
+
 - name: Show commands to check logs manually
   debug:
     msg: |
@@ -231,6 +267,10 @@
       - docker inspect grafana | grep -A 5 '"State"'
       - docker inspect loki | grep -A 5 '"State"'
       - docker inspect prometheus | grep -A 5 '"State"'
+      
+      To test App directly:
+      - curl http://localhost:8000/
+      - curl http://localhost:8000/metrics
       
       To test Prometheus directly:
       - curl http://localhost:9090/api/v1/query?query=up
