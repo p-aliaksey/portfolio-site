@@ -70,9 +70,10 @@ services:
       - GF_SERVER_APP_LOGO_DARK=
       - GF_FEATURE_TOGGLES_ENABLE=
       - GF_INSTALL_PLUGINS=
-    volumes:
-      - grafana-data:/var/lib/grafana
-      - ./infra/monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+        volumes:
+          - grafana-data:/var/lib/grafana
+          - ./infra/monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+          - ./infra/monitoring/grafana/dashboard.json:/etc/grafana/provisioning/dashboards/dashboard.json:ro
     labels:
       - "logging=promtail"
     depends_on:
