@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST
 from prometheus_client import Gauge
 import os
@@ -28,6 +28,26 @@ def create_app() -> Flask:
     def metrics():
         # Do not increment counter here to keep metrics endpoint clean
         return generate_latest(), 200, {"Content-Type": CONTENT_TYPE_LATEST}
+
+    @app.route("/query")
+    def query_redirect():
+        # Redirect /query to /prometheus/ for Prometheus UI
+        return redirect("/prometheus/", code=302)
+
+    @app.route("/prometheus/")
+    def prometheus_redirect():
+        # This should be handled by nginx, but just in case
+        return redirect("/prometheus/", code=302)
+
+    @app.route("/grafana/")
+    def grafana_redirect():
+        # This should be handled by nginx, but just in case
+        return redirect("/grafana/", code=302)
+
+    @app.route("/loki/")
+    def loki_redirect():
+        # This should be handled by nginx, but just in case
+        return redirect("/loki/", code=302)
 
     return app
 
