@@ -114,9 +114,12 @@ def create_app() -> Flask:
                 response_str = response.decode('utf-8')
                 if '\r\n\r\n' in response_str:
                     headers, body = response_str.split('\r\n\r\n', 1)
-                    data = json.loads(body)
+                    try:
+                        data = json.loads(body)
+                    except json.JSONDecodeError as e:
+                        return {"error": f"JSON decode error: {e}", "containers": [], "debug": {"response": body[:200]}}
                 else:
-                    raise Exception("Invalid HTTP response")
+                    return {"error": "Invalid HTTP response", "containers": [], "debug": {"response": response_str[:200]}}
                 
                 containers = []
                 for container in data:
@@ -130,7 +133,7 @@ def create_app() -> Flask:
                     }
                     containers.append(container_info)
                 
-                return {"containers": containers, "debug": {"method": "docker_api"}}
+                return {"containers": containers, "debug": {"method": "docker_api", "count": len(containers)}}
                 
             except Exception as api_error:
                 # Fallback: используем команду docker через host
