@@ -41,7 +41,7 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD={{ grafana_admin_password | default('admin') }}
-      - GF_SERVER_ROOT_URL=http://{{ domain_name }}/grafana/
+      - GF_SERVER_ROOT_URL=http://pishchik-dev.tech/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
       - GF_SERVER_DOMAIN={{ domain_name }}
       - GF_SERVER_ENFORCE_DOMAIN=false
@@ -55,6 +55,19 @@ services:
       - GF_SERVER_HTTP_PORT=3000
       - GF_SERVER_PROTOCOL=http
       - GF_SERVER_ADDRESS=0.0.0.0
+      - GF_SERVER_DISABLE_ROUTER_LOGGING=false
+      - GF_SERVER_APP_ENV=production
+      - GF_SERVER_APP_DEBUG=false
+      - GF_SERVER_CERT_FILE=
+      - GF_SERVER_CERT_KEY=
+      - GF_SERVER_SOCKET=
+      - GF_SERVER_STATIC_ROOT_PATH=
+      - GF_SERVER_LOADING_LOGO=
+      - GF_SERVER_LOADING_LOGO_DARK=
+      - GF_SERVER_APP_LOGO=
+      - GF_SERVER_APP_LOGO_DARK=
+      - GF_FEATURE_TOGGLES_ENABLE=
+      - GF_INSTALL_PLUGINS=
     volumes:
       - grafana-data:/var/lib/grafana
       - ./infra/monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
