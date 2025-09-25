@@ -41,35 +41,13 @@ services:
       - "3001:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD={{ grafana_admin_password | default('admin') }}
-      - GF_SERVER_ROOT_URL=http://pishchik-dev.tech:3000/
+      - GF_SERVER_ROOT_URL=http://pishchik-dev.tech:3001/
       - GF_SERVER_SERVE_FROM_SUB_PATH=false
       - GF_SERVER_DOMAIN=pishchik-dev.tech
       - GF_SERVER_ENFORCE_DOMAIN=false
-      - GF_SERVER_FROM_EMAIL=admin@pishchik-dev.tech
-      - GF_SERVER_OFFLINE_MODE=false
-      - GF_SERVER_ROUTER_LOGGING=true
       - GF_ANALYTICS_REPORTING_ENABLED=false
       - GF_ANALYTICS_CHECK_FOR_UPDATES=false
-      - GF_SERVER_READ_TIMEOUT=30s
-      - GF_SERVER_WRITE_TIMEOUT=30s
-      - GF_SERVER_ENABLE_GZIP=true
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
-      - GF_SERVER_HTTP_PORT=3000
-      - GF_SERVER_PROTOCOL=http
-      - GF_SERVER_ADDRESS=0.0.0.0
-      - GF_SERVER_DISABLE_ROUTER_LOGGING=false
-      - GF_SERVER_APP_ENV=production
-      - GF_SERVER_APP_DEBUG=false
-      - GF_SERVER_CERT_FILE=
-      - GF_SERVER_CERT_KEY=
-      - GF_SERVER_SOCKET=
-      - GF_SERVER_STATIC_ROOT_PATH=
-      - GF_SERVER_LOADING_LOGO=
-      - GF_SERVER_LOADING_LOGO_DARK=
-      - GF_SERVER_APP_LOGO=
-      - GF_SERVER_APP_LOGO_DARK=
-      - GF_FEATURE_TOGGLES_ENABLE=
-      - GF_INSTALL_PLUGINS=
     volumes:
       - grafana-data:/var/lib/grafana
       - ./infra/monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
