@@ -34,21 +34,6 @@ def create_app() -> Flask:
         # Redirect /query to /prometheus/ for Prometheus UI
         return redirect("/prometheus/", code=302)
 
-    @app.route("/prometheus/")
-    def prometheus_redirect():
-        # This should be handled by nginx, but just in case
-        return redirect("/prometheus/", code=302)
-
-    @app.route("/grafana/")
-    def grafana_redirect():
-        # This should be handled by nginx, but just in case
-        return redirect("/grafana/", code=302)
-
-    @app.route("/loki/")
-    def loki_redirect():
-        # This should be handled by nginx, but just in case
-        return redirect("/loki/", code=302)
-
     return app
 
 

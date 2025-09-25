@@ -45,16 +45,6 @@ services:
       - GF_SERVER_APP_MODE=production
       - GF_SERVER_APP_ENV=production
       - GF_SERVER_APP_DEBUG=false
-      - GF_SERVER_CERT_FILE=
-      - GF_SERVER_CERT_KEY=
-      - GF_SERVER_SOCKET=
-      - GF_SERVER_STATIC_ROOT_PATH=
-      - GF_SERVER_LOADING_LOGO=
-      - GF_SERVER_LOADING_LOGO_DARK=
-      - GF_SERVER_APP_LOGO=
-      - GF_SERVER_APP_LOGO_DARK=
-      - GF_SERVER_APP_TITLE=Grafana
-      - GF_SERVER_APP_SUBTITLE=
     volumes:
       - grafana-data:/var/lib/grafana
       - ./infra/monitoring/grafana:/etc/grafana/provisioning/datasources:ro
