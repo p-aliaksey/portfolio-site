@@ -91,6 +91,16 @@
     owner: 472
     group: 472
 
+- name: Check if dashboard files exist locally
+  find:
+    paths: ../../../../infra/monitoring/grafana/dashboards/
+    patterns: "*.json"
+  register: local_dashboard_files
+
+- name: Display found dashboard files
+  debug:
+    msg: "Found {{ local_dashboard_files.files | length }} dashboard files locally: {{ local_dashboard_files.files | map(attribute='path') | list }}"
+
 - name: Upload Grafana dashboards
   copy:
     src: ../../../../infra/monitoring/grafana/dashboards/
@@ -99,6 +109,7 @@
     owner: 472
     group: 472
     force: true
+    backup: true
 
 - name: Set correct permissions for Grafana dashboards directory
   file:
@@ -107,6 +118,30 @@
     owner: 472
     group: 472
     recurse: true
+
+- name: Ensure all dashboard files have correct permissions
+  file:
+    path: "{{ item }}"
+    mode: '0644'
+    owner: 472
+    group: 472
+  loop: "{{ ansible_facts.find_files(paths=['/opt/devops-portfolio/infra/monitoring/grafana/dashboards'], patterns=['*.json']) }}"
+  ignore_errors: true
+
+- name: Check if dashboard files were uploaded successfully
+  find:
+    paths: /opt/devops-portfolio/infra/monitoring/grafana/dashboards/
+    patterns: "*.json"
+  register: uploaded_dashboard_files
+
+- name: Display uploaded dashboard files
+  debug:
+    msg: "Uploaded {{ uploaded_dashboard_files.files | length }} dashboard files: {{ uploaded_dashboard_files.files | map(attribute='path') | list }}"
+
+- name: Fail if no dashboard files were uploaded
+  fail:
+    msg: "No dashboard files were uploaded. Check the source directory and permissions."
+  when: uploaded_dashboard_files.files | length == 0
 
 - name: Restart Grafana to reload dashboards
   shell: |
@@ -117,7 +152,32 @@
 
 - name: Wait for Grafana to reload dashboards
   pause:
-    seconds: 10
+    seconds: 15
+
+- name: Force restart Grafana container to ensure dashboards are loaded
+  docker_container:
+    name: grafana
+    state: restarted
+  ignore_errors: true
+
+- name: Wait for Grafana to start after restart
+  pause:
+    seconds: 20
+
+- name: Check if Grafana can find dashboard files
+  shell: |
+    docker exec grafana ls /var/lib/grafana/dashboards/*.json 2>/dev/null | wc -l
+  register: grafana_dashboard_files_count
+  ignore_errors: true
+
+- name: Display Grafana dashboard files count
+  debug:
+    msg: "Grafana can see {{ grafana_dashboard_files_count.stdout | default('0') }} dashboard files"
+
+- name: Fail if Grafana cannot find dashboard files
+  fail:
+    msg: "Grafana cannot find dashboard files. Check the volume mounts and permissions."
+  when: grafana_dashboard_files_count.stdout | default('0') | int == 0
 
 - name: Test Grafana dashboards API
   uri:
@@ -132,6 +192,51 @@
 - name: Display Grafana dashboards test result
   debug:
     var: grafana_dashboards_test
+
+- name: Check if dashboards are loaded
+  set_fact:
+    dashboard_count: "{{ grafana_dashboards_test.json | length | default(0) }}"
+
+- name: Display dashboard count
+  debug:
+    msg: "Found {{ dashboard_count }} dashboards in Grafana"
+
+- name: Fail if no dashboards are loaded
+  fail:
+    msg: "No dashboards were loaded in Grafana. Check the logs and configuration."
+  when: dashboard_count == 0
+
+- name: Display loaded dashboards
+  debug:
+    msg: "Loaded dashboards: {{ grafana_dashboards_test.json | map(attribute='title') | list }}"
+  when: dashboard_count > 0
+
+- name: Success message
+  debug:
+    msg: "✅ Grafana dashboards successfully provisioned! Found {{ dashboard_count }} dashboards."
+  when: dashboard_count > 0
+
+- name: Final verification - check Grafana logs for dashboard provisioning
+  shell: |
+    docker logs grafana 2>&1 | grep -i "dashboard\|provisioning" | tail -10
+  register: grafana_provisioning_logs
+  ignore_errors: true
+
+- name: Display Grafana provisioning logs
+  debug:
+    msg: "Grafana provisioning logs: {{ grafana_provisioning_logs.stdout_lines | default(['No logs found']) }}"
+
+- name: Final summary
+  debug:
+    msg: |
+      ========================================
+      GRAFANA DASHBOARDS PROVISIONING SUMMARY
+      ========================================
+      Local dashboard files: {{ local_dashboard_files.files | length }}
+      Uploaded dashboard files: {{ uploaded_dashboard_files.files | length }}
+      Grafana can see files: {{ grafana_dashboard_files_count.stdout | default('0') }}
+      Loaded dashboards: {{ dashboard_count }}
+      ========================================
 
 - name: Ensure logging directories exist
   file:
