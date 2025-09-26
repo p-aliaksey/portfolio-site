@@ -28,7 +28,7 @@
     dest: /opt/devops-portfolio/infra/{{ item.dest }}
     mode: '0644'
   loop:
-    - { src: 'nginx/nginx-http.conf.j2', dest: 'nginx/nginx-http.conf' }
+    - { src: 'nginx/nginx-http.conf', dest: 'nginx/nginx-http.conf' }
     - { src: 'monitoring/prometheus/prometheus.yml', dest: 'monitoring/prometheus/prometheus.yml' }
     - { src: 'monitoring/grafana/datasources.yml', dest: 'monitoring/grafana/datasources.yml' }
     - { src: 'monitoring/grafana/dashboards.yml', dest: 'monitoring/grafana/dashboards.yml' }
