@@ -15,6 +15,10 @@ RUN pip install -r /app/requirements.txt
 
 COPY app /app
 
+# Копируем скрипты бэкапа в контейнер
+COPY infra/backup /opt/devops-portfolio/infra/backup
+RUN chmod +x /opt/devops-portfolio/infra/backup/*.sh
+
 ENV PORT=8000
 EXPOSE 8000
 

@@ -111,6 +111,7 @@ def create_app() -> Flask:
             from datetime import datetime, timedelta
             
             # Определяем директорию бэкапов в зависимости от среды
+            # В Docker контейнере /opt/backups монтируется как volume
             if os.path.exists("/opt/backups"):
                 backup_dir = "/opt/backups"
             else:
@@ -224,14 +225,16 @@ def create_app() -> Flask:
             backup_script = "/opt/devops-portfolio/infra/backup/backup.sh"
             
             # Проверяем, работаем ли мы в продакшене
-            if os.path.exists(backup_script) and os.path.exists("/opt/backups"):
+            # В Docker контейнере /opt/backups монтируется как volume
+            if os.path.exists("/opt/backups"):
                 # Продакшен: запускаем реальный скрипт
+                # Скрипт должен быть скопирован в контейнер при сборке
                 result = subprocess.run(
-                    ["sudo", backup_script],
+                    ["bash", "/opt/devops-portfolio/infra/backup/backup.sh"],
                     capture_output=True,
                     text=True,
                     timeout=300,  # 5 минут таймаут
-                    cwd=os.path.dirname(backup_script)
+                    cwd="/opt/devops-portfolio/infra/backup"
                 )
                 
                 if result.returncode == 0:
