@@ -63,7 +63,14 @@ backup_docker_configs() {
         cp "/opt/devops-portfolio/docker-compose.yml" "${BACKUP_PATH}/docker/"
         log "✓ docker-compose.yml скопирован"
     else
-        warning "docker-compose.yml не найден"
+        warning "docker-compose.yml не найден в /opt/devops-portfolio/"
+        # Проверяем альтернативные пути
+        if [ -f "/app/docker-compose.yml" ]; then
+            cp "/app/docker-compose.yml" "${BACKUP_PATH}/docker/"
+            log "✓ docker-compose.yml найден в /app/"
+        else
+            warning "docker-compose.yml не найден ни в одном из путей"
+        fi
     fi
     
     # Копируем конфигурации Nginx
@@ -94,6 +101,9 @@ backup_app_data() {
     if [ -d "/opt/devops-portfolio/app" ]; then
         cp -r "/opt/devops-portfolio/app" "${BACKUP_PATH}/"
         log "✓ Исходный код приложения скопирован"
+    elif [ -d "/app" ]; then
+        cp -r "/app" "${BACKUP_PATH}/"
+        log "✓ Исходный код приложения скопирован из /app"
     fi
     
     # Копируем статические файлы
@@ -101,6 +111,14 @@ backup_app_data() {
         cp -r "/opt/devops-portfolio/static" "${BACKUP_PATH}/"
         log "✓ Статические файлы скопированы"
     fi
+    
+    # Копируем README и другие важные файлы
+    for file in README.md LICENSE Dockerfile; do
+        if [ -f "/opt/devops-portfolio/$file" ]; then
+            cp "/opt/devops-portfolio/$file" "${BACKUP_PATH}/"
+            log "✓ $file скопирован"
+        fi
+    done
 }
 
 # Бэкап данных Grafana
