@@ -9,6 +9,18 @@
     src: ../templates/docker-compose.yml.j2
     dest: /opt/devops-portfolio/docker-compose.yml
 
+- name: Upload Dockerfile
+  copy:
+    src: ../../../../Dockerfile
+    dest: /opt/devops-portfolio/Dockerfile
+    mode: '0644'
+
+- name: Upload app source code
+  copy:
+    src: ../../../../app/
+    dest: /opt/devops-portfolio/app/
+    mode: '0644'
+
 - name: Ensure directories exist
   file:
     path: "/opt/devops-portfolio/infra/{{ item }}"
