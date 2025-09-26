@@ -231,10 +231,10 @@ def create_app() -> Flask:
                     except:
                         pass
                 
-                # Проверяем наличие cron задач через crontab -l для root
+                # Проверяем наличие cron задач через crontab -l для root (без sudo в контейнере)
                 if not cron_found:
                     try:
-                        result = subprocess.run(['sudo', 'crontab', '-l'], capture_output=True, text=True, timeout=5)
+                        result = subprocess.run(['crontab', '-l'], capture_output=True, text=True, timeout=5)
                         if result.returncode == 0 and ('backup.sh' in result.stdout or 'devops-portfolio' in result.stdout):
                             cron_found = True
                     except:

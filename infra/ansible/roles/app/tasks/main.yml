@@ -227,6 +227,24 @@
         user: root
       become: yes
 
+    - name: Copy project files to app container
+      shell: |
+        if docker ps | grep -q app; then
+          # Копируем docker-compose.yml в контейнер
+          docker cp /opt/devops-portfolio/docker-compose.yml app:/opt/devops-portfolio/
+          
+          # Копируем все конфигурации в контейнер
+          docker cp /opt/devops-portfolio/infra/nginx app:/opt/devops-portfolio/infra/
+          docker cp /opt/devops-portfolio/infra/monitoring app:/opt/devops-portfolio/infra/
+          docker cp /opt/devops-portfolio/infra/logging app:/opt/devops-portfolio/infra/
+          
+          # Копируем README, LICENSE, Dockerfile в контейнер
+          docker cp /opt/devops-portfolio/README.md app:/opt/devops-portfolio/ 2>/dev/null || true
+          docker cp /opt/devops-portfolio/LICENSE app:/opt/devops-portfolio/ 2>/dev/null || true
+          docker cp /opt/devops-portfolio/Dockerfile app:/opt/devops-portfolio/ 2>/dev/null || true
+        fi
+      ignore_errors: true
+
     - name: Force update backup script in app container
       shell: |
         if docker ps | grep -q app; then

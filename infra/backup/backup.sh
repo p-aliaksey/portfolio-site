@@ -61,7 +61,7 @@ backup_docker_configs() {
     # Копируем docker-compose.yml - проверяем все возможные пути
     local docker_compose_found=false
     
-    for path in "/opt/devops-portfolio/docker-compose.yml" "/app/docker-compose.yml" "/opt/devops-portfolio/infra/docker-compose.yml" "/app/infra/docker-compose.yml" "/opt/devops-portfolio/infra/ansible/roles/app/templates/docker-compose.yml.j2"; do
+    for path in "/opt/devops-portfolio/docker-compose.yml" "/app/docker-compose.yml" "/opt/devops-portfolio/infra/docker-compose.yml" "/app/infra/docker-compose.yml" "/opt/devops-portfolio/infra/ansible/roles/app/templates/docker-compose.yml.j2" "/app/docker-compose.yml"; do
         if [ -f "$path" ]; then
             cp "$path" "${BACKUP_PATH}/docker/"
             log "✓ docker-compose.yml скопирован из $path"
@@ -186,6 +186,31 @@ backup_app_data() {
             mkdir -p "${BACKUP_PATH}/$(dirname "$relative_path")"
             cp "$file" "${BACKUP_PATH}/$relative_path"
             log "✓ Конфигурация скопирована: $relative_path"
+        done
+    fi
+    
+    # Копируем все файлы проекта из хоста (если доступны)
+    if [ -d "/opt/devops-portfolio" ]; then
+        # Копируем docker-compose.yml с хоста
+        if [ -f "/opt/devops-portfolio/docker-compose.yml" ]; then
+            cp "/opt/devops-portfolio/docker-compose.yml" "${BACKUP_PATH}/docker/"
+            log "✓ docker-compose.yml скопирован с хоста"
+        fi
+        
+        # Копируем все конфигурации с хоста
+        for dir in nginx monitoring logging; do
+            if [ -d "/opt/devops-portfolio/infra/$dir" ]; then
+                cp -r "/opt/devops-portfolio/infra/$dir" "${BACKUP_PATH}/docker/"
+                log "✓ Конфигурации $dir скопированы с хоста"
+            fi
+        done
+        
+        # Копируем README, LICENSE, Dockerfile с хоста
+        for file in README.md LICENSE Dockerfile; do
+            if [ -f "/opt/devops-portfolio/$file" ]; then
+                cp "/opt/devops-portfolio/$file" "${BACKUP_PATH}/"
+                log "✓ $file скопирован с хоста"
+            fi
         done
     fi
 }
