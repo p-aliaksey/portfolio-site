@@ -76,7 +76,7 @@
 - name: Build and start containers
   community.docker.docker_compose_v2:
     project_src: /opt/devops-portfolio
-    build: true
+    build: always
     pull: never
 
 - name: Test Nginx configuration syntax
