@@ -38,40 +38,24 @@ ssh ubuntu@$VM_IP "sudo docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Po
 # Тестирование HTTP endpoints
 echo "🌐 Тестирование HTTP endpoints..."
 
-# Главная страница
-echo "Тестирование главной страницы..."
-if curl -s -f "http://$DOMAIN/" > /dev/null; then
-    echo "✅ Главная страница работает"
-else
-    echo "❌ Главная страница не работает"
-fi
+# Функция для тестирования endpoint
+test_endpoint() {
+    local name=$1
+    local url=$2
+    echo "Тестирование $name..."
+    if curl -s -f "$url" > /dev/null; then
+        echo "✅ $name работает"
+    else
+        echo "❌ $name не работает"
+        echo "Ответ: $(curl -s -I "$url" | head -1)"
+    fi
+}
 
-# Prometheus
-echo "Тестирование Prometheus..."
-if curl -s -f "http://$DOMAIN/prometheus/" > /dev/null; then
-    echo "✅ Prometheus работает"
-else
-    echo "❌ Prometheus не работает"
-    echo "Ответ: $(curl -s -I "http://$DOMAIN/prometheus/" | head -1)"
-fi
-
-# Grafana
-echo "Тестирование Grafana..."
-if curl -s -f "http://$DOMAIN/grafana/" > /dev/null; then
-    echo "✅ Grafana работает"
-else
-    echo "❌ Grafana не работает"
-    echo "Ответ: $(curl -s -I "http://$DOMAIN/grafana/" | head -1)"
-fi
-
-# Loki
-echo "Тестирование Loki..."
-if curl -s -f "http://$DOMAIN/loki/" > /dev/null; then
-    echo "✅ Loki работает"
-else
-    echo "❌ Loki не работает"
-    echo "Ответ: $(curl -s -I "http://$DOMAIN/loki/" | head -1)"
-fi
+# Тестируем все endpoints
+test_endpoint "Главная страница" "http://$DOMAIN/"
+test_endpoint "Prometheus" "http://$DOMAIN/prometheus/"
+test_endpoint "Grafana" "http://$DOMAIN/grafana/"
+test_endpoint "Loki" "http://$DOMAIN/loki/"
 
 echo "🎉 Тестирование завершено!"
 echo "🌐 Откройте в браузере: http://$DOMAIN"

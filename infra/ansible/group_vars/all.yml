@@ -1,8 +1,35 @@
+# GitHub Configuration
 github_repository: "{{ lookup('env','GITHUB_REPOSITORY') | default('owner/repo', true) }}"
 app_image: "{{ 'ghcr.io/' ~ (lookup('env','GITHUB_REPOSITORY') | default('owner/repo', true)) ~ ':latest' }}"
+
+# Grafana Configuration
 grafana_admin_password: admin
+
+# Domain Configuration
 domain_name: pishchik-dev.tech
 letsencrypt_email: admin2@1soft.by
+
+# GHCR Configuration
 ghcr_username: "{{ lookup('env','GHCR_USERNAME') | default(omit, true) }}"
 ghcr_token: "{{ lookup('env','GHCR_TOKEN') | default(omit, true) }}"
+
+# HTTPS Configuration
 enable_https: false
+
+# Service Ports
+service_ports:
+  nginx: 80
+  app: 8000
+  prometheus: 9090
+  grafana: 3001
+  loki: 3100
+
+# Container Configuration
+container_config:
+  grafana_uid: 472
+  grafana_gid: 472
+  nginx_image: nginx:1.27-alpine
+  prometheus_image: prom/prometheus:latest
+  grafana_image: grafana/grafana:latest
+  loki_image: grafana/loki:2.9.8
+  promtail_image: grafana/promtail:2.9.8

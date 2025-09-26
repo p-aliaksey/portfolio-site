@@ -18,6 +18,16 @@ provider "yandex" {
 locals {
   use_existing_vpc   = var.vpc_network_id != ""
   use_existing_subnet = var.vpc_subnet_id != ""
+  
+  # Ports configuration
+  ports = {
+    ssh      = 22
+    http     = 80
+    https    = 443
+    prometheus = 9090
+    grafana  = 3000
+    loki     = 3100
+  }
 }
 
 resource "yandex_vpc_network" "vpc" {
@@ -38,46 +48,15 @@ resource "yandex_vpc_security_group" "sg" {
   name       = "devops-portfolio-sg"
   network_id = local.use_existing_vpc ? var.vpc_network_id : yandex_vpc_network.vpc[0].id
 
-  ingress {
-    protocol       = "TCP"
-    description    = "SSH"
-    port           = 22
-    v4_cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    protocol       = "TCP"
-    description    = "HTTP"
-    port           = 80
-    v4_cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    protocol       = "TCP"
-    description    = "HTTPS"
-    port           = 443
-    v4_cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    protocol       = "TCP"
-    description    = "Prometheus"
-    port           = 9090
-    v4_cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    protocol       = "TCP"
-    description    = "Grafana"
-    port           = 3000
-    v4_cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    protocol       = "TCP"
-    description    = "Loki"
-    port           = 3100
-    v4_cidr_blocks = ["0.0.0.0/0"]
+  # Ingress rules
+  dynamic "ingress" {
+    for_each = local.ports
+    content {
+      protocol       = "TCP"
+      description    = upper(ingress.key)
+      port           = ingress.value
+      v4_cidr_blocks = ["0.0.0.0/0"]
+    }
   }
 
   egress {
@@ -88,9 +67,9 @@ resource "yandex_vpc_security_group" "sg" {
 }
 
 resource "yandex_compute_instance" "vm" {
-  name = "devops-portfolio-vm"
+  name        = "devops-portfolio-vm"
   platform_id = "standard-v3"
-  zone = var.yc_zone
+  zone        = var.yc_zone
 
   resources {
     cores  = 2
@@ -115,5 +94,3 @@ resource "yandex_compute_instance" "vm" {
     ssh-keys = "${var.ssh_user}:${var.public_ssh_key}"
   }
 }
-
- 

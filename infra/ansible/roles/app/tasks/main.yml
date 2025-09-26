@@ -9,266 +9,50 @@
     src: ../templates/docker-compose.yml.j2
     dest: /opt/devops-portfolio/docker-compose.yml
 
-- name: Ensure Nginx webroot for ACME exists
+- name: Ensure directories exist
   file:
-    path: /opt/devops-portfolio/infra/nginx/webroot
-    state: directory
-    mode: '0755'
-  when: enable_https | default(false) | bool
-
-- name: Upload Nginx config (HTTP only)
-  copy:
-    src: ../../../../infra/nginx/nginx-http.conf
-    dest: /opt/devops-portfolio/infra/nginx/nginx-http.conf
-    mode: '0644'
-
-- name: Ensure monitoring directories exist
-  file:
-    path: "/opt/devops-portfolio/infra/monitoring/{{ item }}"
+    path: "/opt/devops-portfolio/infra/{{ item }}"
     state: directory
     mode: '0755'
   loop:
-    - prometheus
-    - grafana
+    - nginx/webroot
+    - monitoring/prometheus
+    - monitoring/grafana
+    - monitoring/grafana/dashboards
+    - logging/loki
+    - logging/promtail
 
-- name: Check if grafana datasources.yml is a directory
-  stat:
-    path: /opt/devops-portfolio/infra/monitoring/grafana/datasources.yml
-  register: gf_ds
-
-- name: Remove wrong grafana datasources.yml directory
-  file:
-    path: /opt/devops-portfolio/infra/monitoring/grafana/datasources.yml
-    state: absent
-  when: gf_ds.stat.isdir is defined and gf_ds.stat.isdir
-
-- name: Upload Prometheus config
+- name: Upload configuration files
   copy:
-    src: ../../../../infra/monitoring/prometheus/prometheus.yml
-    dest: /opt/devops-portfolio/infra/monitoring/prometheus/prometheus.yml
+    src: ../../../../infra/{{ item.src }}
+    dest: /opt/devops-portfolio/infra/{{ item.dest }}
     mode: '0644'
-
-- name: Upload Grafana datasources config
-  copy:
-    src: ../../../../infra/monitoring/grafana/datasources.yml
-    dest: /opt/devops-portfolio/infra/monitoring/grafana/datasources.yml
-    mode: '0644'
-
-- name: Check if grafana dashboards.yml is a directory
-  stat:
-    path: /opt/devops-portfolio/infra/monitoring/grafana/dashboards.yml
-  register: gf_dashboards
-
-- name: Remove wrong grafana dashboards.yml directory
-  file:
-    path: /opt/devops-portfolio/infra/monitoring/grafana/dashboards.yml
-    state: absent
-  when: gf_dashboards.stat.isdir is defined and gf_dashboards.stat.isdir
-
-- name: Create Grafana dashboards config
-  copy:
-    content: |
-      apiVersion: 1
-
-      providers:
-        - name: 'default'
-          orgId: 1
-          folder: ''
-          type: file
-          disableDeletion: false
-          updateIntervalSeconds: 10
-          allowUiUpdates: true
-          options:
-            path: /var/lib/grafana/dashboards
-    dest: /opt/devops-portfolio/infra/monitoring/grafana/dashboards.yml
-    mode: '0644'
-
-- name: Ensure Grafana dashboards directory exists
-  file:
-    path: /opt/devops-portfolio/infra/monitoring/grafana/dashboards
-    state: directory
-    mode: '0755'
-    owner: 472
-    group: 472
-
-- name: Check if dashboard files exist locally
-  find:
-    paths: ../../../../infra/monitoring/grafana/dashboards/
-    patterns: "*.json"
-  register: local_dashboard_files
-
-- name: Display found dashboard files
-  debug:
-    msg: "Found {{ local_dashboard_files.files | length }} dashboard files locally: {{ local_dashboard_files.files | map(attribute='path') | list }}"
-
-- name: Upload Grafana dashboards
-  copy:
-    src: ../../../../infra/monitoring/grafana/dashboards/
-    dest: /opt/devops-portfolio/infra/monitoring/grafana/dashboards/
-    mode: '0644'
-    owner: 472
-    group: 472
-    force: true
-    backup: true
-
-- name: Set correct permissions for Grafana dashboards directory
-  file:
-    path: /opt/devops-portfolio/infra/monitoring/grafana/dashboards
-    mode: '0755'
-    owner: 472
-    group: 472
-    recurse: true
-
-- name: Ensure all dashboard files have correct permissions
-  file:
-    path: "{{ item }}"
-    mode: '0644'
-    owner: 472
-    group: 472
-  loop: "{{ ansible_facts.find_files(paths=['/opt/devops-portfolio/infra/monitoring/grafana/dashboards'], patterns=['*.json']) }}"
-  ignore_errors: true
-
-- name: Check if dashboard files were uploaded successfully
-  find:
-    paths: /opt/devops-portfolio/infra/monitoring/grafana/dashboards/
-    patterns: "*.json"
-  register: uploaded_dashboard_files
-
-- name: Display uploaded dashboard files
-  debug:
-    msg: "Uploaded {{ uploaded_dashboard_files.files | length }} dashboard files: {{ uploaded_dashboard_files.files | map(attribute='path') | list }}"
-
-- name: Fail if no dashboard files were uploaded
-  fail:
-    msg: "No dashboard files were uploaded. Check the source directory and permissions."
-  when: uploaded_dashboard_files.files | length == 0
-
-- name: Restart Grafana to reload dashboards
-  shell: |
-    if docker ps | grep -q grafana; then
-      docker exec grafana pkill -HUP grafana-server || true
-    fi
-  ignore_errors: true
-
-- name: Wait for Grafana to reload dashboards
-  pause:
-    seconds: 15
-
-- name: Force restart Grafana container to ensure dashboards are loaded
-  docker_container:
-    name: grafana
-    state: restarted
-  ignore_errors: true
-
-- name: Wait for Grafana to start after restart
-  pause:
-    seconds: 20
-
-- name: Check if Grafana can find dashboard files
-  shell: |
-    docker exec grafana ls /var/lib/grafana/dashboards/*.json 2>/dev/null | wc -l
-  register: grafana_dashboard_files_count
-  ignore_errors: true
-
-- name: Display Grafana dashboard files count
-  debug:
-    msg: "Grafana can see {{ grafana_dashboard_files_count.stdout | default('0') }} dashboard files"
-
-- name: Fail if Grafana cannot find dashboard files
-  fail:
-    msg: "Grafana cannot find dashboard files. Check the volume mounts and permissions."
-  when: grafana_dashboard_files_count.stdout | default('0') | int == 0
-
-- name: Test Grafana dashboards API
-  uri:
-    url: "http://localhost:3001/api/search?type=dash-db"
-    method: GET
-    return_content: true
-    user: admin
-    password: "{{ grafana_admin_password | default('admin') }}"
-  register: grafana_dashboards_test
-  ignore_errors: true
-
-- name: Display Grafana dashboards test result
-  debug:
-    var: grafana_dashboards_test
-
-- name: Check if dashboards are loaded
-  set_fact:
-    dashboard_count: "{{ grafana_dashboards_test.json | length | default(0) }}"
-
-- name: Display dashboard count
-  debug:
-    msg: "Found {{ dashboard_count }} dashboards in Grafana"
-
-- name: Fail if no dashboards are loaded
-  fail:
-    msg: "No dashboards were loaded in Grafana. Check the logs and configuration."
-  when: dashboard_count == 0
-
-- name: Display loaded dashboards
-  debug:
-    msg: "Loaded dashboards: {{ grafana_dashboards_test.json | map(attribute='title') | list }}"
-  when: dashboard_count > 0
-
-- name: Success message
-  debug:
-    msg: "✅ Grafana dashboards successfully provisioned! Found {{ dashboard_count }} dashboards."
-  when: dashboard_count > 0
-
-- name: Final verification - check Grafana logs for dashboard provisioning
-  shell: |
-    docker logs grafana 2>&1 | grep -i "dashboard\|provisioning" | tail -10
-  register: grafana_provisioning_logs
-  ignore_errors: true
-
-- name: Display Grafana provisioning logs
-  debug:
-    msg: "Grafana provisioning logs: {{ grafana_provisioning_logs.stdout_lines | default(['No logs found']) }}"
-
-- name: Final summary
-  debug:
-    msg: |
-      ========================================
-      GRAFANA DASHBOARDS PROVISIONING SUMMARY
-      ========================================
-      Local dashboard files: {{ local_dashboard_files.files | length }}
-      Uploaded dashboard files: {{ uploaded_dashboard_files.files | length }}
-      Grafana can see files: {{ grafana_dashboard_files_count.stdout | default('0') }}
-      Loaded dashboards: {{ dashboard_count }}
-      ========================================
-
-- name: Ensure logging directories exist
-  file:
-    path: "/opt/devops-portfolio/infra/logging/{{ item }}"
-    state: directory
-    mode: '0755'
   loop:
-    - loki
-    - promtail
+    - { src: 'nginx/nginx-http.conf.j2', dest: 'nginx/nginx-http.conf' }
+    - { src: 'monitoring/prometheus/prometheus.yml', dest: 'monitoring/prometheus/prometheus.yml' }
+    - { src: 'monitoring/grafana/datasources.yml', dest: 'monitoring/grafana/datasources.yml' }
+    - { src: 'monitoring/grafana/dashboards.yml', dest: 'monitoring/grafana/dashboards.yml' }
+    - { src: 'logging/loki/loki-config.yml', dest: 'logging/loki/loki-config.yml' }
+    - { src: 'logging/promtail/promtail-config.yml', dest: 'logging/promtail/promtail-config.yml' }
 
-- name: Check if loki config is a directory
-  stat:
-    path: /opt/devops-portfolio/infra/logging/loki/loki-config.yml
-  register: loki_cfg
+- name: Setup Grafana dashboards
+  block:
+    - name: Upload Grafana dashboards
+      copy:
+        src: ../../../../infra/monitoring/grafana/dashboards/
+        dest: /opt/devops-portfolio/infra/monitoring/grafana/dashboards/
+        mode: '0644'
+        owner: 472
+        group: 472
+        force: true
 
-- name: Remove wrong loki config directory
-  file:
-    path: /opt/devops-portfolio/infra/logging/loki/loki-config.yml
-    state: absent
-  when: loki_cfg.stat.isdir is defined and loki_cfg.stat.isdir
-
-- name: Upload Loki config
-  copy:
-    src: ../../../../infra/logging/loki/loki-config.yml
-    dest: /opt/devops-portfolio/infra/logging/loki/loki-config.yml
-    mode: '0644'
-
-- name: Upload Promtail config
-  copy:
-    src: ../../../../infra/logging/promtail/promtail-config.yml
-    dest: /opt/devops-portfolio/infra/logging/promtail/promtail-config.yml
-    mode: '0644'
+    - name: Set correct permissions for Grafana dashboards
+      file:
+        path: /opt/devops-portfolio/infra/monitoring/grafana/dashboards
+        mode: '0755'
+        owner: 472
+        group: 472
+        recurse: true
 
 - name: Login to GHCR (optional)
   community.docker.docker_login:
@@ -282,157 +66,54 @@
     project_src: /opt/devops-portfolio
     pull: always
 
-- name: Remove stale nginx container (if any)
-  community.docker.docker_container:
-    name: nginx
-    state: absent
-    force_kill: true
-
 - name: Test Nginx configuration syntax
   command: docker run --rm -v /opt/devops-portfolio/infra/nginx/nginx-http.conf:/etc/nginx/conf.d/default.conf:ro nginx:1.27-alpine nginx -t
   register: nginx_config_test
   ignore_errors: true
 
-- name: Display Nginx config test result
-  debug:
-    var: nginx_config_test
-
-- name: Check if all required config files exist
-  stat:
-    path: "/opt/devops-portfolio/{{ item }}"
-  register: config_files
-  loop:
-    - infra/nginx/nginx-http.conf
-    - infra/monitoring/prometheus/prometheus.yml
-    - infra/monitoring/grafana/datasources.yml
-    - infra/monitoring/grafana/dashboards.yml
-    - infra/logging/loki/loki-config.yml
-    - infra/logging/promtail/promtail-config.yml
-
-- name: Display config files status
-  debug:
-    msg: "{{ item.item }} exists: {{ item.stat.exists }}"
-  loop: "{{ config_files.results }}"
-
-- name: Start stack (http only until certs)
+- name: Start stack
   community.docker.docker_compose_v2:
     project_src: /opt/devops-portfolio
     state: present
     remove_orphans: true
     recreate: always
 
-- name: Check all container statuses
-  community.docker.docker_container_info:
-    name: "{{ item }}"
-  register: container_status
+- name: Wait for services to start
+  wait_for:
+    host: 127.0.0.1
+    port: "{{ item }}"
+    delay: 5
+    timeout: 60
   loop:
-    - nginx
-    - app
-    - prometheus
-    - grafana
-    - loki
-    - promtail
-
-- name: Display all container statuses
-  debug:
-    var: container_status
-
-- name: Check container logs
-  command: docker logs "{{ item.item }}"
-  register: container_logs
-  loop: "{{ container_status.results }}"
-  when: item.exists
+    - 80    # Nginx
+    - 8000  # App
+    - 9090  # Prometheus
+    - 3001  # Grafana
+    - 3100  # Loki
   ignore_errors: true
 
-- name: Display container logs
-  debug:
-    msg: "{{ item.item }} logs: {{ item.stdout_lines | default(['No logs']) }}"
-  loop: "{{ container_logs.results | default([]) }}"
-  when: item is defined
+- name: Restart Grafana to reload dashboards
+  community.docker.docker_container:
+    name: grafana
+    state: restarted
+  ignore_errors: true
 
-- name: Test Prometheus connectivity
+- name: Wait for Grafana to start after restart
+  pause:
+    seconds: 15
+
+- name: Test services connectivity
   uri:
-    url: "http://localhost:9090/api/v1/query?query=up"
+    url: "{{ item.url }}"
     method: GET
     return_content: true
-  register: prometheus_test
+  register: service_tests
+  loop:
+    - { name: "App", url: "http://localhost:8000/" }
+    - { name: "Prometheus", url: "http://localhost:9090/api/v1/query?query=up" }
+    - { name: "Grafana", url: "http://localhost:3001/api/health" }
+    - { name: "Loki", url: "http://localhost:3100/ready" }
   ignore_errors: true
-
-- name: Display Prometheus test result
-  debug:
-    var: prometheus_test
-
-- name: Test Nginx connectivity to Prometheus
-  uri:
-    url: "http://localhost/prometheus/api/v1/query?query=up"
-    method: GET
-    return_content: true
-  register: nginx_prometheus_test
-  ignore_errors: true
-
-- name: Display Nginx Prometheus test result
-  debug:
-    var: nginx_prometheus_test
-
-- name: Test App connectivity
-  uri:
-    url: "http://localhost:8000/"
-    method: GET
-    return_content: true
-  register: app_test
-  ignore_errors: true
-
-- name: Display App test result
-  debug:
-    var: app_test
-
-- name: Test Grafana connectivity
-  uri:
-    url: "http://localhost:3001/api/health"
-    method: GET
-    return_content: true
-  register: grafana_test
-  ignore_errors: true
-
-- name: Display Grafana test result
-  debug:
-    var: grafana_test
-
-- name: Test Nginx connectivity to Grafana
-  uri:
-    url: "http://localhost/grafana/api/health"
-    method: GET
-    return_content: true
-  register: nginx_grafana_test
-  ignore_errors: true
-
-- name: Display Nginx Grafana test result
-  debug:
-    var: nginx_grafana_test
-
-- name: Test Loki connectivity
-  uri:
-    url: "http://localhost:3100/ready"
-    method: GET
-    return_content: true
-  register: loki_test
-  ignore_errors: true
-
-- name: Display Loki test result
-  debug:
-    var: loki_test
-
-- name: Test Nginx connectivity to Loki
-  uri:
-    url: "http://localhost/loki/ready"
-    method: GET
-    return_content: true
-  register: nginx_loki_test
-  ignore_errors: true
-
-- name: Display Nginx Loki test result
-  debug:
-    var: nginx_loki_test
 
 - name: Test Grafana dashboards API
   uri:
@@ -444,70 +125,35 @@
   register: grafana_dashboards_test
   ignore_errors: true
 
-- name: Display Grafana dashboards test result
-  debug:
-    var: grafana_dashboards_test
+- name: Check if dashboards are loaded
+  set_fact:
+    dashboard_count: "{{ grafana_dashboards_test.json | length | default(0) }}"
 
-- name: Show commands to check logs manually
+- name: Display deployment summary
   debug:
     msg: |
-      To check container logs manually, run these commands on the server:
-      - docker logs grafana
-      - docker logs loki
-      - docker logs prometheus
-      - docker logs nginx
-      - docker logs app
-      - docker logs promtail
-      
-      To check container status:
+      ========================================
+      DEPLOYMENT SUMMARY
+      ========================================
+      Services Status:
+      {% for test in service_tests.results %}
+      - {{ test.item.name }}: {{ 'OK' if test.status == 200 else 'FAILED' }}
+      {% endfor %}
+      Grafana Dashboards: {{ dashboard_count }}
+      ========================================
+
+- name: Fail if no dashboards are loaded
+  fail:
+    msg: "No dashboards were loaded in Grafana. Check the logs and configuration."
+  when: dashboard_count == 0
+
+- name: Show manual test commands
+  debug:
+    msg: |
+      Manual test commands:
       - docker ps -a
-      
-      To check if containers are running:
-      - docker inspect grafana | grep -A 5 '"State"'
-      - docker inspect loki | grep -A 5 '"State"'
-      - docker inspect prometheus | grep -A 5 '"State"'
-      
-      To test App directly:
-      - curl http://localhost:8000/
-      - curl http://localhost:8000/metrics
-      
-      To test Prometheus directly:
-      - curl http://localhost:9090/api/v1/query?query=up
-      - curl http://localhost/prometheus/api/v1/query?query=up
-      
-      To test Grafana directly:
-      - curl http://localhost:3001/api/health
-      - curl http://localhost/grafana/api/health
-      
-      To test Loki directly:
-      - curl http://localhost:3100/ready
-      - curl http://localhost/loki/ready
-      
-      To test Grafana dashboards:
+      - docker logs grafana
       - curl -u admin:{{ grafana_admin_password | default('admin') }} http://localhost:3001/api/search?type=dash-db
-
-- name: Wait for Prometheus to listen on 9090
-  wait_for:
-    host: 127.0.0.1
-    port: 9090
-    delay: 2
-    timeout: 30
-  ignore_errors: true
-
-- name: Wait for Grafana to listen on 3001
-  wait_for:
-    host: 127.0.0.1
-    port: 3001
-    delay: 2
-    timeout: 30
-  ignore_errors: true
-
-- name: Wait for Nginx to listen on 80
-  wait_for:
-    host: 127.0.0.1
-    port: 80
-    delay: 2
-    timeout: 60
 
 - name: Create ACME health file in webroot
   command: docker exec nginx sh -c 'mkdir -p /var/www/certbot/.well-known/acme-challenge && echo ok > /var/www/certbot/.well-known/acme-challenge/health'
