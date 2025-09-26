@@ -35,8 +35,22 @@ warning() {
 # Создание директории для бэкапов
 create_backup_dir() {
     log "Создание директории для бэкапов: $BACKUP_DIR"
-    sudo mkdir -p "$BACKUP_DIR"
-    sudo chown -R $(whoami):$(whoami) "$BACKUP_DIR"
+    # В контейнере директория уже должна существовать и быть доступной для записи
+    if [ ! -d "$BACKUP_DIR" ]; then
+        log "Директория $BACKUP_DIR не существует, создаем..."
+        mkdir -p "$BACKUP_DIR" || {
+            error "Не удалось создать директорию $BACKUP_DIR"
+            return 1
+        }
+    fi
+    
+    # Проверяем права на запись
+    if [ ! -w "$BACKUP_DIR" ]; then
+        error "Нет прав на запись в директорию $BACKUP_DIR"
+        return 1
+    fi
+    
+    log "✓ Директория $BACKUP_DIR доступна для записи"
 }
 
 # Бэкап конфигураций Docker
@@ -102,7 +116,9 @@ backup_grafana_data() {
     
     # Копируем данные Grafana
     if [ -d "/var/lib/docker/volumes/grafana-data" ]; then
-        sudo cp -r "/var/lib/docker/volumes/grafana-data" "${BACKUP_PATH}/grafana/"
+        cp -r "/var/lib/docker/volumes/grafana-data" "${BACKUP_PATH}/grafana/" || {
+            warning "Не удалось скопировать данные Grafana (возможно, нет прав доступа)"
+        }
         log "✓ Данные Grafana скопированы"
     fi
     
@@ -126,7 +142,9 @@ backup_loki_data() {
     
     # Копируем данные Loki
     if [ -d "/var/lib/docker/volumes/loki-data" ]; then
-        sudo cp -r "/var/lib/docker/volumes/loki-data" "${BACKUP_PATH}/loki/"
+        cp -r "/var/lib/docker/volumes/loki-data" "${BACKUP_PATH}/loki/" || {
+            warning "Не удалось скопировать данные Loki (возможно, нет прав доступа)"
+        }
         log "✓ Данные Loki скопированы"
     fi
     
