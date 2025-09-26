@@ -180,11 +180,13 @@
         owner: ubuntu
         group: ubuntu
 
-    - name: Copy backup scripts
-      copy:
-        src: ../../../../infra/backup/
-        dest: /opt/devops-portfolio/infra/backup/
-        mode: '0755'
+       - name: Copy backup scripts
+         copy:
+           src: ../../../../infra/backup/
+           dest: /opt/devops-portfolio/infra/backup/
+           mode: '0755'
+           force: true
+           backup: true
 
     - name: Make backup scripts executable
       file:
@@ -204,11 +206,37 @@
         mode: '0440'
         validate: 'visudo -cf %s'
 
-    - name: Setup automatic backups
-      shell: /opt/devops-portfolio/infra/backup/setup-cron.sh
-      become: yes
-      ignore_errors: true
+       - name: Setup automatic backups
+         shell: /opt/devops-portfolio/infra/backup/setup-cron.sh
+         become: yes
+         ignore_errors: true
 
+       - name: Force update backup script in app container
+         shell: |
+           if docker ps | grep -q app; then
+             docker exec app cp /opt/devops-portfolio/infra/backup/backup.sh /opt/devops-portfolio/infra/backup/backup.sh.new
+             docker exec app mv /opt/devops-portfolio/infra/backup/backup.sh.new /opt/devops-portfolio/infra/backup/backup.sh
+             docker exec app chmod +x /opt/devops-portfolio/infra/backup/backup.sh
+           fi
+         ignore_errors: true
+
+       - name: Restart app container to ensure script is updated
+         community.docker.docker_container:
+           name: app
+           state: restarted
+         ignore_errors: true
+
+       - name: Verify backup script is updated
+         shell: |
+           if docker ps | grep -q app; then
+             docker exec app grep -q "docker_compose_found" /opt/devops-portfolio/infra/backup/backup.sh
+           fi
+         register: script_updated
+         ignore_errors: true
+
+       - name: Display script update status
+         debug:
+           msg: "Backup script updated: {{ 'Yes' if script_updated.rc == 0 else 'No' }}"
 
 - name: Show manual test commands
   debug:
