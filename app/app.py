@@ -62,6 +62,11 @@ def create_app() -> Flask:
         request_counter.labels(path="/monitoring").inc()
         return render_template("monitoring.html")
     
+    @app.route("/architecture")
+    def architecture():
+        request_counter.labels(path="/architecture").inc()
+        return render_template("architecture.html")
+    
     @app.route("/api/system/disk")
     def system_disk():
         import shutil
@@ -81,6 +86,7 @@ def create_app() -> Flask:
                 {'Names': 'app', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'},
                 {'Names': 'nginx', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'},
                 {'Names': 'prometheus', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'},
+                {'Names': 'grafana', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'},
                 {'Names': 'loki', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'},
                 {'Names': 'promtail', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'}
             ]
