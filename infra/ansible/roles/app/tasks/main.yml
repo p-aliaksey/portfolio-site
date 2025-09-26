@@ -54,6 +54,24 @@
     dest: /opt/devops-portfolio/infra/monitoring/grafana/datasources.yml
     mode: '0644'
 
+- name: Upload Grafana dashboards config
+  copy:
+    src: ../../../../infra/monitoring/grafana/dashboards.yml
+    dest: /opt/devops-portfolio/infra/monitoring/grafana/dashboards.yml
+    mode: '0644'
+
+- name: Ensure Grafana dashboards directory exists
+  file:
+    path: /opt/devops-portfolio/infra/monitoring/grafana/dashboards
+    state: directory
+    mode: '0755'
+
+- name: Upload Grafana dashboards
+  copy:
+    src: ../../../../infra/monitoring/grafana/dashboards/
+    dest: /opt/devops-portfolio/infra/monitoring/grafana/dashboards/
+    mode: '0644'
+
 - name: Ensure logging directories exist
   file:
     path: "/opt/devops-portfolio/infra/logging/{{ item }}"
@@ -203,7 +221,7 @@
 
 - name: Test Grafana connectivity
   uri:
-    url: "http://localhost:3000/api/health"
+    url: "http://localhost:3001/api/health"
     method: GET
     return_content: true
   register: grafana_test
@@ -277,7 +295,7 @@
       - curl http://localhost/prometheus/api/v1/query?query=up
       
       To test Grafana directly:
-      - curl http://localhost:3000/api/health
+      - curl http://localhost:3001/api/health
       - curl http://localhost/grafana/api/health
       
       To test Loki directly:
@@ -292,10 +310,10 @@
     timeout: 30
   ignore_errors: true
 
-- name: Wait for Grafana to listen on 3000
+- name: Wait for Grafana to listen on 3001
   wait_for:
     host: 127.0.0.1
-    port: 3000
+    port: 3001
     delay: 2
     timeout: 30
   ignore_errors: true
