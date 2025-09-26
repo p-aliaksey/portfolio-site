@@ -73,22 +73,17 @@
     password: "{{ ghcr_token | default(omit) }}"
   when: ghcr_username is defined and ghcr_token is defined
 
-- name: Pull images
+- name: Build and start containers
   community.docker.docker_compose_v2:
     project_src: /opt/devops-portfolio
-    pull: always
+    build: true
+    pull: false
 
 - name: Test Nginx configuration syntax
   command: docker run --rm -v /opt/devops-portfolio/infra/nginx/nginx-http.conf:/etc/nginx/conf.d/default.conf:ro --network host --add-host app:127.0.0.1 --add-host prometheus:127.0.0.1 --add-host grafana:127.0.0.1 --add-host loki:127.0.0.1 nginx:1.27-alpine nginx -t
   register: nginx_config_test
   ignore_errors: true
 
-- name: Start stack
-  community.docker.docker_compose_v2:
-    project_src: /opt/devops-portfolio
-    state: present
-    remove_orphans: true
-    recreate: always
 
 - name: Wait for services to start
   wait_for:
