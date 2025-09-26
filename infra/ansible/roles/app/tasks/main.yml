@@ -182,6 +182,8 @@
         path: /opt/backups
         state: directory
         mode: '0755'
+        owner: ubuntu
+        group: ubuntu
 
     - name: Copy backup scripts
       copy:
@@ -212,39 +214,6 @@
       become: yes
       ignore_errors: true
 
-    - name: Install Python dependencies for backup API via apt
-      package:
-        name: 
-          - python3-flask
-          - python3-requests
-        state: present
-
-    - name: Create systemd service for backup API
-      copy:
-        content: |
-          [Unit]
-          Description=Backup API Service
-          After=network.target
-
-          [Service]
-          Type=simple
-          User=ubuntu
-          WorkingDirectory=/opt/devops-portfolio/infra/backup
-          ExecStart=/usr/bin/python3 /opt/devops-portfolio/infra/backup/backup-api.py
-          Restart=always
-          RestartSec=10
-
-          [Install]
-          WantedBy=multi-user.target
-        dest: /etc/systemd/system/backup-api.service
-        mode: '0644'
-
-    - name: Enable and start backup API service
-      systemd:
-        name: backup-api
-        enabled: yes
-        state: started
-        daemon_reload: yes
 
 - name: Show manual test commands
   debug:
