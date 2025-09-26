@@ -169,6 +169,7 @@
         - /opt/devops-portfolio/infra/backup/backup.sh
         - /opt/devops-portfolio/infra/backup/restore.sh
         - /opt/devops-portfolio/infra/backup/setup-cron.sh
+        - /opt/devops-portfolio/infra/backup/backup-status.sh
 
     - name: Setup automatic backups
       shell: /opt/devops-portfolio/infra/backup/setup-cron.sh
@@ -185,6 +186,7 @@
       Backup commands:
       - /opt/devops-portfolio/infra/backup/backup.sh
       - /opt/devops-portfolio/infra/backup/restore.sh /opt/backups/backup-file.tar.gz
+      - /opt/devops-portfolio/infra/backup/backup-status.sh
       - crontab -l
 
 - name: Create ACME health file in webroot

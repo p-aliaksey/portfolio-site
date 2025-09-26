@@ -10,7 +10,7 @@ BACKUP_DIR="/opt/backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_NAME="devops-portfolio-backup-${DATE}"
 BACKUP_PATH="${BACKUP_DIR}/${BACKUP_NAME}"
-RETENTION_DAYS=7
+MAX_BACKUPS=3
 LOG_FILE="/var/log/backup.log"
 
 # Цвета для вывода
@@ -155,9 +155,22 @@ create_backup_archive() {
 
 # Очистка старых бэкапов
 cleanup_old_backups() {
-    log "Очистка бэкапов старше $RETENTION_DAYS дней..."
-    find "$BACKUP_DIR" -name "devops-portfolio-backup-*.tar.gz" -type f -mtime +$RETENTION_DAYS -delete
-    log "✓ Старые бэкапы удалены"
+    log "Очистка бэкапов (оставляем только $MAX_BACKUPS последних)..."
+    
+    # Получаем список всех бэкапов, отсортированных по времени создания (новые первыми)
+    local backup_files=($(find "$BACKUP_DIR" -name "devops-portfolio-backup-*.tar.gz" -type f -printf "%T@ %p\n" | sort -nr | awk '{print $2}'))
+    
+    # Удаляем все бэкапы кроме последних MAX_BACKUPS
+    if [ ${#backup_files[@]} -gt $MAX_BACKUPS ]; then
+        local files_to_delete=("${backup_files[@]:$MAX_BACKUPS}")
+        for file in "${files_to_delete[@]}"; do
+            log "Удаление старого бэкапа: $(basename "$file")"
+            rm -f "$file"
+        done
+        log "✓ Удалено $((${#backup_files[@]} - MAX_BACKUPS)) старых бэкапов"
+    else
+        log "✓ Количество бэкапов в пределах лимита ($MAX_BACKUPS)"
+    fi
 }
 
 # Проверка целостности бэкапа

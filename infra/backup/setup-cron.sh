@@ -44,6 +44,9 @@ setup_permissions() {
 setup_cron() {
     log "Настройка cron задачи для автоматических бэкапов..."
     
+    # Удаляем старые задачи бэкапа если есть
+    crontab -l 2>/dev/null | grep -v "$BACKUP_SCRIPT" | crontab - 2>/dev/null || true
+    
     # Создаем cron задачу для ежедневного бэкапа в 2:00
     local cron_entry="0 2 * * * $BACKUP_SCRIPT >> $CRON_LOG 2>&1"
     

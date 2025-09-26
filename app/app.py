@@ -203,6 +203,49 @@ def create_app() -> Flask:
                 "cron_status": "Error",
                 "backup_health": "Error"
             }
+    
+    @app.route("/api/system/backups/create", methods=["POST"])
+    def create_backup():
+        try:
+            import subprocess
+            import json
+            
+            # Запускаем скрипт создания бэкапа
+            result = subprocess.run(
+                ["/opt/devops-portfolio/infra/backup/backup.sh"],
+                capture_output=True,
+                text=True,
+                timeout=300  # 5 минут таймаут
+            )
+            
+            if result.returncode == 0:
+                return {
+                    "success": True,
+                    "message": "Резервная копия создана успешно",
+                    "output": result.stdout,
+                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                }
+            else:
+                return {
+                    "success": False,
+                    "message": "Ошибка при создании резервной копии",
+                    "error": result.stderr,
+                    "output": result.stdout,
+                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                }
+                
+        except subprocess.TimeoutExpired:
+            return {
+                "success": False,
+                "message": "Таймаут при создании резервной копии (более 5 минут)",
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "message": f"Ошибка при запуске скрипта бэкапа: {str(e)}",
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
 
     return app
 
