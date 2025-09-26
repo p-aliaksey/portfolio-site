@@ -77,7 +77,7 @@
   community.docker.docker_compose_v2:
     project_src: /opt/devops-portfolio
     build: true
-    pull: false
+    pull: never
 
 - name: Test Nginx configuration syntax
   command: docker run --rm -v /opt/devops-portfolio/infra/nginx/nginx-http.conf:/etc/nginx/conf.d/default.conf:ro --network host --add-host app:127.0.0.1 --add-host prometheus:127.0.0.1 --add-host grafana:127.0.0.1 --add-host loki:127.0.0.1 nginx:1.27-alpine nginx -t
