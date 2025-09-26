@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST
-from prometheus_client import Gauge
+from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST, Gauge
 import os
 import time
+import requests
 from datetime import datetime
 from translations import translations, _
 
@@ -114,7 +114,6 @@ def create_app() -> Flask:
             # В Docker контейнере /opt/backups монтируется как volume
             if os.path.exists("/opt/backups"):
                 # Продакшен: проксируем запрос к API бэкапов на хосте
-                import requests
                 try:
                     response = requests.get("http://host.docker.internal:8001/api/backup/stats", timeout=10)
                     return jsonify(response.json())
@@ -243,7 +242,6 @@ def create_app() -> Flask:
             # В Docker контейнере /opt/backups монтируется как volume
             if os.path.exists("/opt/backups"):
                 # Продакшен: проксируем запрос к API бэкапов на хосте
-                import requests
                 try:
                     response = requests.post(
                         "http://host.docker.internal:8001/api/backup/create",

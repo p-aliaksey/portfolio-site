@@ -200,16 +200,11 @@
       become: yes
       ignore_errors: true
 
-    - name: Install pip3
+    - name: Install Python dependencies for backup API via apt
       package:
-        name: python3-pip
-        state: present
-
-    - name: Install Python dependencies for backup API
-      pip:
         name: 
-          - flask
-          - requests
+          - python3-flask
+          - python3-requests
         state: present
 
     - name: Create systemd service for backup API
