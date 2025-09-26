@@ -53,8 +53,8 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
       - ./infra/monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
-      - ./infra/monitoring/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
-      - ./infra/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./infra/monitoring/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards.yml:ro
+      - ./infra/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     labels:
       - "logging=promtail"
     depends_on:
