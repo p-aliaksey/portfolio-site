@@ -54,9 +54,32 @@
     dest: /opt/devops-portfolio/infra/monitoring/grafana/datasources.yml
     mode: '0644'
 
-- name: Upload Grafana dashboards config
+- name: Check if grafana dashboards.yml is a directory
+  stat:
+    path: /opt/devops-portfolio/infra/monitoring/grafana/dashboards.yml
+  register: gf_dashboards
+
+- name: Remove wrong grafana dashboards.yml directory
+  file:
+    path: /opt/devops-portfolio/infra/monitoring/grafana/dashboards.yml
+    state: absent
+  when: gf_dashboards.stat.isdir is defined and gf_dashboards.stat.isdir
+
+- name: Create Grafana dashboards config
   copy:
-    src: ../../../../infra/monitoring/grafana/dashboards.yml
+    content: |
+      apiVersion: 1
+
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          updateIntervalSeconds: 10
+          allowUiUpdates: true
+          options:
+            path: /var/lib/grafana/dashboards
     dest: /opt/devops-portfolio/infra/monitoring/grafana/dashboards.yml
     mode: '0644'
 
@@ -139,6 +162,7 @@
     - infra/nginx/nginx-http.conf
     - infra/monitoring/prometheus/prometheus.yml
     - infra/monitoring/grafana/datasources.yml
+    - infra/monitoring/grafana/dashboards.yml
     - infra/logging/loki/loki-config.yml
     - infra/logging/promtail/promtail-config.yml
 
