@@ -45,4 +45,4 @@ docker-compose.yml
 
 License
 MIT
-v_19.7
+v_24.5(Latest)
