@@ -98,8 +98,6 @@
 - name: Set correct permissions for Grafana dashboards directory
   file:
     path: /opt/devops-portfolio/infra/monitoring/grafana/dashboards
-    owner: grafana
-    group: grafana
     mode: '0755'
     recurse: true
 
