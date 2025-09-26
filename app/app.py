@@ -224,10 +224,10 @@ def create_app() -> Flask:
             backup_script = "/opt/devops-portfolio/infra/backup/backup.sh"
             
             # Проверяем, работаем ли мы в продакшене
-            if os.path.exists(backup_script):
+            if os.path.exists(backup_script) and os.path.exists("/opt/backups"):
                 # Продакшен: запускаем реальный скрипт
                 result = subprocess.run(
-                    [backup_script],
+                    ["sudo", backup_script],
                     capture_output=True,
                     text=True,
                     timeout=300,  # 5 минут таймаут

@@ -8,7 +8,7 @@
   },
   "home": {
     "title": "DevOps Инженер",
-    "subtitle": "Строю инфраструктуры и CI/CD, внедряю наблюдаемость и логирование. Сфокусирован на надёжности, безопасности и скорости поставки.",
+    "subtitle": "DevOps инженер с опытом автоматизации и построения инфраструктур",
     "cta": {
       "learn_more": "Подробнее",
       "monitoring": "Мониторинг",
@@ -41,11 +41,24 @@
         "email": "Email"
       }
     },
-    "experience": {
-      "title": "Опыт работы",
-      "years": "Более 10 лет.",
-      "description": "Опыт поддержки ИТ‑инфраструктур на разных проектах. Навыки работы с веб‑серверами, сетями, мониторингом, email, виртуализацией, СУБД, контейнеризацией.",
-      "skills_title": "Ключевые навыки DevOps (Junior):"
+    "skills": {
+      "title": "Навыки и опыт",
+      "experience": "Более 10 лет",
+      "description": "опыта поддержки ИТ‑инфраструктур на разных проектах. Навыки работы с веб‑серверами, сетями, мониторингом, email, виртуализацией, СУБД, контейнеризацией.",
+      "key_skills": "Ключевые навыки DevOps (Junior)",
+      "os_virtualization": "Operating Systems & Virtualization: Linux, Windows, VMWare, Hyper‑V, Proxmox",
+      "containers": "Containers & Orchestration: Docker, Docker Compose, Kubernetes (basic)",
+      "cicd": "CI/CD: Jenkins, GitLab CI, GitHub Actions",
+      "networking": "Networking & Infrastructure: DHCP, DNS, TCP/IP, FTP, RDP, OpenVPN, PPTP, Ethernet, NAT, IPSec, Mikrotik",
+      "web_servers": "Web Servers: IIS, Apache, Nginx",
+      "cloud_platforms": "Cloud Platforms: Google Cloud Platform, AWS, Yandex Cloud, Hetzner",
+      "databases": "Databases: PostgreSQL, MS SQL",
+      "automation": "Automation & Scripting: Ansible, Bash, Python scripting",
+      "monitoring": "Monitoring & Observability: Zabbix, Prometheus, Grafana, Alertmanager, Loki",
+      "business_systems": "Business & Enterprise Systems: 1C, 1C Cluster, Active Directory (AD), Email Servers",
+      "telephony": "Telephony: Asterisk, VoIP",
+      "security": "Security: Vaultwarden, SSL/TLS, Access Control",
+      "version_control": "Version Control: Git"
     }
   },
   "monitoring": {

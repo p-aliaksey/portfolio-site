@@ -8,7 +8,7 @@
   },
   "home": {
     "title": "DevOps Engineer",
-    "subtitle": "Building infrastructures and CI/CD, implementing observability and logging. Focused on reliability, security and delivery speed.",
+    "subtitle": "DevOps engineer with experience in automation and infrastructure building",
     "cta": {
       "learn_more": "Learn More",
       "monitoring": "Monitoring",
@@ -41,11 +41,24 @@
         "email": "Email"
       }
     },
-    "experience": {
-      "title": "Work Experience",
-      "years": "Over 10 years.",
-      "description": "Experience in supporting IT infrastructures on various projects. Skills in web servers, networks, monitoring, email, virtualization, databases, containerization.",
-      "skills_title": "Key DevOps Skills (Junior):"
+    "skills": {
+      "title": "Skills and Experience",
+      "experience": "Over 10 years",
+      "description": "of experience in supporting IT infrastructures on various projects. Skills in web servers, networks, monitoring, email, virtualization, databases, containerization.",
+      "key_skills": "Key DevOps Skills (Junior)",
+      "os_virtualization": "Operating Systems & Virtualization: Linux, Windows, VMWare, Hyper‑V, Proxmox",
+      "containers": "Containers & Orchestration: Docker, Docker Compose, Kubernetes (basic)",
+      "cicd": "CI/CD: Jenkins, GitLab CI, GitHub Actions",
+      "networking": "Networking & Infrastructure: DHCP, DNS, TCP/IP, FTP, RDP, OpenVPN, PPTP, Ethernet, NAT, IPSec, Mikrotik",
+      "web_servers": "Web Servers: IIS, Apache, Nginx",
+      "cloud_platforms": "Cloud Platforms: Google Cloud Platform, AWS, Yandex Cloud, Hetzner",
+      "databases": "Databases: PostgreSQL, MS SQL",
+      "automation": "Automation & Scripting: Ansible, Bash, Python scripting",
+      "monitoring": "Monitoring & Observability: Zabbix, Prometheus, Grafana, Alertmanager, Loki",
+      "business_systems": "Business & Enterprise Systems: 1C, 1C Cluster, Active Directory (AD), Email Servers",
+      "telephony": "Telephony: Asterisk, VoIP",
+      "security": "Security: Vaultwarden, SSL/TLS, Access Control",
+      "version_control": "Version Control: Git"
     }
   },
   "monitoring": {

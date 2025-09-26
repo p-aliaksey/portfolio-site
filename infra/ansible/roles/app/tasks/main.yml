@@ -67,7 +67,7 @@
     pull: always
 
 - name: Test Nginx configuration syntax
-  command: docker run --rm -v /opt/devops-portfolio/infra/nginx/nginx-http.conf:/etc/nginx/conf.d/default.conf:ro nginx:1.27-alpine nginx -t
+  command: docker run --rm -v /opt/devops-portfolio/infra/nginx/nginx-http.conf:/etc/nginx/conf.d/default.conf:ro --network host nginx:1.27-alpine nginx -t
   register: nginx_config_test
   ignore_errors: true
 
@@ -95,7 +95,13 @@
 - name: Restart Grafana to reload dashboards
   community.docker.docker_container:
     name: grafana
-    state: restarted
+    state: stopped
+  ignore_errors: true
+
+- name: Start Grafana after restart
+  community.docker.docker_container:
+    name: grafana
+    state: started
   ignore_errors: true
 
 - name: Wait for Grafana to start after restart
@@ -121,7 +127,7 @@
     method: GET
     return_content: true
     user: admin
-    password: "{{ grafana_admin_password | default('admin') }}"
+    password: "{{ grafana_admin_password | default('QAwsEDrf') }}"
   register: grafana_dashboards_test
   ignore_errors: true
 
