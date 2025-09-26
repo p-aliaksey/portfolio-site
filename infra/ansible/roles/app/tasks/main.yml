@@ -92,12 +92,14 @@
     group: 472
 
 - name: Upload Grafana dashboards
-  copy:
+  synchronize:
     src: ../../../../infra/monitoring/grafana/dashboards/
     dest: /opt/devops-portfolio/infra/monitoring/grafana/dashboards/
-    mode: '0644'
-    owner: 472
-    group: 472
+    delete: false
+    recursive: true
+    rsync_opts:
+      - "--chmod=644"
+      - "--chown=472:472"
 
 - name: Set correct permissions for Grafana dashboards directory
   file:
@@ -106,6 +108,10 @@
     owner: 472
     group: 472
     recurse: true
+
+- name: Restart Grafana to reload dashboards
+  command: docker exec grafana pkill -HUP grafana-server
+  ignore_errors: true
 
 - name: Ensure logging directories exist
   file:
