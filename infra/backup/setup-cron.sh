@@ -25,8 +25,8 @@ error() {
 # Проверяем права доступа
 check_permissions() {
     if [ "$EUID" -ne 0 ]; then
-        error "Скрипт должен быть запущен с правами root"
-        exit 1
+        warning "Скрипт запущен без прав root, попробуем с sudo"
+        # Не выходим, а продолжаем с sudo
     fi
 }
 
@@ -48,7 +48,7 @@ setup_cron() {
     crontab -l 2>/dev/null | grep -v "$BACKUP_SCRIPT" | crontab - 2>/dev/null || true
     
     # Создаем cron задачу для ежедневного бэкапа в 2:00
-    local cron_entry="0 2 * * * $BACKUP_SCRIPT >> $CRON_LOG 2>&1"
+    local cron_entry="0 2 * * * sudo $BACKUP_SCRIPT >> $CRON_LOG 2>&1"
     
     # Добавляем задачу в crontab
     (crontab -l 2>/dev/null; echo "$cron_entry") | crontab -
