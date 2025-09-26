@@ -95,6 +95,14 @@
     dest: /opt/devops-portfolio/infra/monitoring/grafana/dashboards/
     mode: '0644'
 
+- name: Set correct permissions for Grafana dashboards directory
+  file:
+    path: /opt/devops-portfolio/infra/monitoring/grafana/dashboards
+    owner: grafana
+    group: grafana
+    mode: '0755'
+    recurse: true
+
 - name: Ensure logging directories exist
   file:
     path: "/opt/devops-portfolio/infra/logging/{{ item }}"
@@ -291,6 +299,20 @@
   debug:
     var: nginx_loki_test
 
+- name: Test Grafana dashboards API
+  uri:
+    url: "http://localhost:3001/api/search?type=dash-db"
+    method: GET
+    return_content: true
+    user: admin
+    password: "{{ grafana_admin_password | default('admin') }}"
+  register: grafana_dashboards_test
+  ignore_errors: true
+
+- name: Display Grafana dashboards test result
+  debug:
+    var: grafana_dashboards_test
+
 - name: Show commands to check logs manually
   debug:
     msg: |
@@ -325,6 +347,9 @@
       To test Loki directly:
       - curl http://localhost:3100/ready
       - curl http://localhost/loki/ready
+      
+      To test Grafana dashboards:
+      - curl -u admin:{{ grafana_admin_password | default('admin') }} http://localhost:3001/api/search?type=dash-db
 
 - name: Wait for Prometheus to listen on 9090
   wait_for:
