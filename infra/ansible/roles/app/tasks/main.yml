@@ -92,14 +92,13 @@
     group: 472
 
 - name: Upload Grafana dashboards
-  synchronize:
+  copy:
     src: ../../../../infra/monitoring/grafana/dashboards/
     dest: /opt/devops-portfolio/infra/monitoring/grafana/dashboards/
-    delete: false
-    recursive: true
-    rsync_opts:
-      - "--chmod=644"
-      - "--chown=472:472"
+    mode: '0644'
+    owner: 472
+    group: 472
+    force: true
 
 - name: Set correct permissions for Grafana dashboards directory
   file:
@@ -110,8 +109,29 @@
     recurse: true
 
 - name: Restart Grafana to reload dashboards
-  command: docker exec grafana pkill -HUP grafana-server
+  shell: |
+    if docker ps | grep -q grafana; then
+      docker exec grafana pkill -HUP grafana-server || true
+    fi
   ignore_errors: true
+
+- name: Wait for Grafana to reload dashboards
+  pause:
+    seconds: 10
+
+- name: Test Grafana dashboards API
+  uri:
+    url: "http://localhost:3001/api/search?type=dash-db"
+    method: GET
+    return_content: true
+    user: admin
+    password: "{{ grafana_admin_password | default('admin') }}"
+  register: grafana_dashboards_test
+  ignore_errors: true
+
+- name: Display Grafana dashboards test result
+  debug:
+    var: grafana_dashboards_test
 
 - name: Ensure logging directories exist
   file:
