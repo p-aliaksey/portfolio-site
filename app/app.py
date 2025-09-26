@@ -113,7 +113,22 @@ def create_app() -> Flask:
             # Определяем директорию бэкапов в зависимости от среды
             # В Docker контейнере /opt/backups монтируется как volume
             if os.path.exists("/opt/backups"):
-                backup_dir = "/opt/backups"
+                # Продакшен: проксируем запрос к API бэкапов на хосте
+                import requests
+                try:
+                    response = requests.get("http://host.docker.internal:8001/api/backup/stats", timeout=10)
+                    return jsonify(response.json())
+                except Exception as e:
+                    return jsonify({
+                        "error": f"Ошибка подключения к API бэкапов: {str(e)}",
+                        "total_backups": 0,
+                        "total_size": "0 MB",
+                        "last_backup": None,
+                        "oldest_backup": None,
+                        "backups": [],
+                        "cron_status": "Error",
+                        "backup_health": "Error"
+                    })
             else:
                 # Локальная разработка
                 backup_dir = os.path.join(os.getcwd(), "test-backups")
@@ -227,29 +242,18 @@ def create_app() -> Flask:
             # Проверяем, работаем ли мы в продакшене
             # В Docker контейнере /opt/backups монтируется как volume
             if os.path.exists("/opt/backups"):
-                # Продакшен: запускаем реальный скрипт
-                # Скрипт должен быть скопирован в контейнер при сборке
-                result = subprocess.run(
-                    ["bash", "/opt/devops-portfolio/infra/backup/backup.sh"],
-                    capture_output=True,
-                    text=True,
-                    timeout=300,  # 5 минут таймаут
-                    cwd="/opt/devops-portfolio/infra/backup"
-                )
-                
-                if result.returncode == 0:
-                    return jsonify({
-                        "success": True,
-                        "message": "Резервная копия создана успешно",
-                        "output": result.stdout,
-                        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    })
-                else:
+                # Продакшен: проксируем запрос к API бэкапов на хосте
+                import requests
+                try:
+                    response = requests.post(
+                        "http://host.docker.internal:8001/api/backup/create",
+                        timeout=300
+                    )
+                    return jsonify(response.json())
+                except Exception as e:
                     return jsonify({
                         "success": False,
-                        "message": "Ошибка при создании резервной копии",
-                        "error": result.stderr,
-                        "output": result.stdout,
+                        "message": f"Ошибка подключения к API бэкапов: {str(e)}",
                         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     })
             else:

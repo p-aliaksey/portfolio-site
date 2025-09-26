@@ -8,6 +8,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /opt/backups:/opt/backups
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     labels:
       - "logging=promtail"
 
