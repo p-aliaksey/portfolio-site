@@ -651,6 +651,18 @@
                     }
                 });
                 
+                // Проверяем статус ответа
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                // Проверяем Content-Type
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Ожидался JSON, получен: ${contentType}. Ответ: ${text.substring(0, 200)}...`);
+                }
+                
                 const data = await response.json();
                 
                 // Скрываем прогресс
