@@ -211,6 +211,22 @@
       become: yes
       ignore_errors: true
 
+    - name: Ensure cron service is running
+      systemd:
+        name: cron
+        state: started
+        enabled: yes
+      become: yes
+
+    - name: Add backup cron job manually
+      cron:
+        name: "DevOps Portfolio Backup"
+        minute: "0"
+        hour: "2"
+        job: "/opt/devops-portfolio/infra/backup/backup.sh >> /var/log/backup-cron.log 2>&1"
+        user: root
+      become: yes
+
     - name: Force update backup script in app container
       shell: |
         if docker ps | grep -q app; then

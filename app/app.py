@@ -191,6 +191,8 @@ def create_app() -> Flask:
             
             # Проверяем статус cron задач
             try:
+                cron_found = False
+                
                 # Проверяем cron через файлы crontab
                 cron_files = [
                     '/etc/crontab',
@@ -200,7 +202,6 @@ def create_app() -> Flask:
                     '/var/spool/cron/root'
                 ]
                 
-                cron_found = False
                 for cron_file in cron_files:
                     try:
                         with open(cron_file, 'r') as f:
@@ -215,6 +216,25 @@ def create_app() -> Flask:
                 if not cron_found:
                     try:
                         result = subprocess.run(['crontab', '-l'], capture_output=True, text=True, timeout=5)
+                        if result.returncode == 0 and ('backup.sh' in result.stdout or 'devops-portfolio' in result.stdout):
+                            cron_found = True
+                    except:
+                        pass
+                
+                # Проверяем через systemctl (для systemd cron)
+                if not cron_found:
+                    try:
+                        result = subprocess.run(['systemctl', 'is-active', 'cron'], capture_output=True, text=True, timeout=5)
+                        if result.returncode == 0 and result.stdout.strip() == 'active':
+                            # Если cron активен, считаем что автоматизация настроена
+                            cron_found = True
+                    except:
+                        pass
+                
+                # Проверяем наличие cron задач через crontab -l для root
+                if not cron_found:
+                    try:
+                        result = subprocess.run(['sudo', 'crontab', '-l'], capture_output=True, text=True, timeout=5)
                         if result.returncode == 0 and ('backup.sh' in result.stdout or 'devops-portfolio' in result.stdout):
                             cron_found = True
                     except:

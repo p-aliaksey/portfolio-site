@@ -61,7 +61,7 @@ backup_docker_configs() {
     # Копируем docker-compose.yml - проверяем все возможные пути
     local docker_compose_found=false
     
-    for path in "/opt/devops-portfolio/docker-compose.yml" "/app/docker-compose.yml" "/opt/devops-portfolio/infra/docker-compose.yml"; do
+    for path in "/opt/devops-portfolio/docker-compose.yml" "/app/docker-compose.yml" "/opt/devops-portfolio/infra/docker-compose.yml" "/app/infra/docker-compose.yml" "/opt/devops-portfolio/infra/ansible/roles/app/templates/docker-compose.yml.j2"; do
         if [ -f "$path" ]; then
             cp "$path" "${BACKUP_PATH}/docker/"
             log "✓ docker-compose.yml скопирован из $path"
@@ -156,9 +156,9 @@ backup_app_data() {
     fi
     
     # Копируем README и другие важные файлы - проверяем все возможные пути
-    for file in README.md LICENSE Dockerfile; do
+    for file in README.md LICENSE Dockerfile docker-compose.yml; do
         local file_found=false
-        for path in "/opt/devops-portfolio/$file" "/app/$file" "/opt/devops-portfolio/infra/$file"; do
+        for path in "/opt/devops-portfolio/$file" "/app/$file" "/opt/devops-portfolio/infra/$file" "/app/infra/$file"; do
             if [ -f "$path" ]; then
                 cp "$path" "${BACKUP_PATH}/"
                 log "✓ $file скопирован из $path"
@@ -171,6 +171,23 @@ backup_app_data() {
             warning "$file не найден"
         fi
     done
+    
+    # Копируем все .yml и .yaml файлы из infra
+    if [ -d "/opt/devops-portfolio/infra" ]; then
+        find /opt/devops-portfolio/infra -name "*.yml" -o -name "*.yaml" | while read file; do
+            relative_path=$(echo "$file" | sed 's|/opt/devops-portfolio/||')
+            mkdir -p "${BACKUP_PATH}/$(dirname "$relative_path")"
+            cp "$file" "${BACKUP_PATH}/$relative_path"
+            log "✓ Конфигурация скопирована: $relative_path"
+        done
+    elif [ -d "/app/infra" ]; then
+        find /app/infra -name "*.yml" -o -name "*.yaml" | while read file; do
+            relative_path=$(echo "$file" | sed 's|/app/||')
+            mkdir -p "${BACKUP_PATH}/$(dirname "$relative_path")"
+            cp "$file" "${BACKUP_PATH}/$relative_path"
+            log "✓ Конфигурация скопирована: $relative_path"
+        done
+    fi
 }
 
 # Бэкап данных Grafana
