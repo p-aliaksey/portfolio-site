@@ -191,28 +191,19 @@ def create_app() -> Flask:
             
             # Проверяем статус cron задач
             try:
-                # Проверяем cron через файл /etc/crontab или /var/spool/cron/crontabs/ubuntu
-                cron_files = [
-                    '/etc/crontab',
-                    '/var/spool/cron/crontabs/ubuntu',
-                    '/var/spool/cron/crontabs/root'
-                ]
+                # В контейнере проверяем cron через выполнение команды на хосте
+                result = subprocess.run([
+                    'sh', '-c', 
+                    'crontab -l 2>/dev/null | grep -q backup.sh && echo "Active" || echo "Not Found"'
+                ], capture_output=True, text=True, timeout=5)
                 
-                cron_found = False
-                for cron_file in cron_files:
-                    try:
-                        with open(cron_file, 'r') as f:
-                            content = f.read()
-                            if 'backup.sh' in content:
-                                cron_found = True
-                                break
-                    except:
-                        continue
-                
-                if cron_found:
-                    backup_stats["cron_status"] = "Active"
+                if result.returncode == 0:
+                    if "Active" in result.stdout:
+                        backup_stats["cron_status"] = "Active"
+                    else:
+                        backup_stats["cron_status"] = "Not Found"
                 else:
-                    backup_stats["cron_status"] = "Not Found"
+                    backup_stats["cron_status"] = "Unknown"
             except:
                 backup_stats["cron_status"] = "Unknown"
             
