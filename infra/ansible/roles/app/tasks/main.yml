@@ -88,17 +88,23 @@
     path: /opt/devops-portfolio/infra/monitoring/grafana/dashboards
     state: directory
     mode: '0755'
+    owner: 472
+    group: 472
 
 - name: Upload Grafana dashboards
   copy:
     src: ../../../../infra/monitoring/grafana/dashboards/
     dest: /opt/devops-portfolio/infra/monitoring/grafana/dashboards/
     mode: '0644'
+    owner: 472
+    group: 472
 
 - name: Set correct permissions for Grafana dashboards directory
   file:
     path: /opt/devops-portfolio/infra/monitoring/grafana/dashboards
     mode: '0755'
+    owner: 472
+    group: 472
     recurse: true
 
 - name: Ensure logging directories exist
