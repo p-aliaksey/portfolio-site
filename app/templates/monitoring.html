@@ -78,6 +78,48 @@
                 </div>
             </div>
             
+            <!-- Секция бэкапов -->
+            <div class="card" style="margin-top: 32px">
+                <h3>💾 Статистика бэкапов</h3>
+                <div id="backup-info">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                        <div class="backup-stat-card">
+                            <h4>📊 Общая статистика</h4>
+                            <div id="backup-stats">
+                                <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; animation: pulse 2s infinite;">
+                                    Загрузка...
+                                </div>
+                            </div>
+                        </div>
+                        <div class="backup-stat-card">
+                            <h4>⏰ Последний бэкап</h4>
+                            <div id="last-backup">
+                                <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; animation: pulse 2s infinite;">
+                                    Загрузка...
+                                </div>
+                            </div>
+                        </div>
+                        <div class="backup-stat-card">
+                            <h4>🔧 Статус автоматизации</h4>
+                            <div id="cron-status">
+                                <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; animation: pulse 2s infinite;">
+                                    Загрузка...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4>📋 Список бэкапов</h4>
+                        <div id="backup-list">
+                            <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; animation: pulse 2s infinite;">
+                                Загрузка...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
         </section>
     </main>
     
@@ -152,6 +194,125 @@
         .disk-bar.danger {
             background: linear-gradient(90deg, #f44336, #e91e63);
         }
+        
+        /* Стили для секции бэкапов */
+        .backup-stat-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .backup-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .backup-stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #2c3e50;
+        }
+        
+        .backup-stat-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        
+        .backup-health {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .backup-health.healthy {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .backup-health.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .backup-health.critical {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .backup-health.no-backups {
+            background: #e2e3e5;
+            color: #6c757d;
+        }
+        
+        .cron-status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .cron-status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .cron-status.not-found {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .cron-status.unknown {
+            background: #e2e3e5;
+            color: #6c757d;
+        }
+        
+        .backup-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+            transition: all 0.3s ease;
+        }
+        
+        .backup-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .backup-item-info {
+            flex: 1;
+        }
+        
+        .backup-item-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+        
+        .backup-item-details {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+        
+        .backup-item-size {
+            font-weight: bold;
+            color: #007bff;
+            margin-left: 16px;
+        }
     </style>
     
     <script>
@@ -216,6 +377,10 @@
                         </div>
                     `;
                 }
+                
+                // Загрузка информации о бэкапах
+                await loadBackupInfo();
+                
             } catch (error) {
                 console.error('Ошибка загрузки системной информации:', error);
                 document.getElementById('disk-text').innerHTML = '<p style="color: red;">Ошибка загрузки</p>';
@@ -223,6 +388,110 @@
                     <div class="container-card stopped">
                         <div class="container-name">Ошибка</div>
                         <div class="container-status">Не удалось загрузить данные</div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Загрузка информации о бэкапах
+        async function loadBackupInfo() {
+            try {
+                const backupResponse = await fetch('/api/system/backups');
+                const backupData = await backupResponse.json();
+                
+                // Общая статистика
+                const backupStats = document.getElementById('backup-stats');
+                backupStats.innerHTML = `
+                    <div class="backup-stat-number">${backupData.total_backups}</div>
+                    <div class="backup-stat-label">Всего бэкапов</div>
+                    <div style="margin-top: 10px; font-size: 0.9em; color: #6c757d;">
+                        <div>Общий размер: ${backupData.total_size}</div>
+                        <div class="backup-health ${backupData.backup_health.toLowerCase()}">
+                            ${backupData.backup_health}
+                        </div>
+                    </div>
+                `;
+                
+                // Последний бэкап
+                const lastBackup = document.getElementById('last-backup');
+                if (backupData.last_backup) {
+                    lastBackup.innerHTML = `
+                        <div style="font-size: 1.2em; font-weight: bold; color: #2c3e50; margin-bottom: 8px;">
+                            ${backupData.last_backup}
+                        </div>
+                        <div style="font-size: 0.9em; color: #6c757d;">
+                            Последний бэкап
+                        </div>
+                    `;
+                } else {
+                    lastBackup.innerHTML = `
+                        <div style="font-size: 1.2em; font-weight: bold; color: #dc3545; margin-bottom: 8px;">
+                            Нет бэкапов
+                        </div>
+                        <div style="font-size: 0.9em; color: #6c757d;">
+                            Бэкапы не найдены
+                        </div>
+                    `;
+                }
+                
+                // Статус cron
+                const cronStatus = document.getElementById('cron-status');
+                cronStatus.innerHTML = `
+                    <div class="cron-status ${backupData.cron_status.toLowerCase().replace(' ', '-')}">
+                        ${backupData.cron_status}
+                    </div>
+                    <div style="margin-top: 8px; font-size: 0.9em; color: #6c757d;">
+                        Автоматические бэкапы
+                    </div>
+                `;
+                
+                // Список бэкапов
+                const backupList = document.getElementById('backup-list');
+                if (backupData.backups && backupData.backups.length > 0) {
+                    let backupListHtml = '';
+                    backupData.backups.forEach((backup, index) => {
+                        backupListHtml += `
+                            <div class="backup-item" style="animation-delay: ${index * 0.1}s;">
+                                <div class="backup-item-info">
+                                    <div class="backup-item-name">${backup.filename}</div>
+                                    <div class="backup-item-details">
+                                        ${backup.date} • ${backup.age}
+                                    </div>
+                                </div>
+                                <div class="backup-item-size">${backup.size}</div>
+                            </div>
+                        `;
+                    });
+                    backupList.innerHTML = backupListHtml;
+                } else {
+                    backupList.innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #6c757d;">
+                            <div style="font-size: 2em; margin-bottom: 10px;">📁</div>
+                            <div>Бэкапы не найдены</div>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Ошибка загрузки информации о бэкапах:', error);
+                document.getElementById('backup-stats').innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #dc3545;">
+                        Ошибка загрузки
+                    </div>
+                `;
+                document.getElementById('last-backup').innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #dc3545;">
+                        Ошибка загрузки
+                    </div>
+                `;
+                document.getElementById('cron-status').innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #dc3545;">
+                        Ошибка загрузки
+                    </div>
+                `;
+                document.getElementById('backup-list').innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #dc3545;">
+                        Ошибка загрузки
                     </div>
                 `;
             }

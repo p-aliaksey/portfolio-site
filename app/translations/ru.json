@@ -1,0 +1,137 @@
+{
+  "nav": {
+    "home": "Главная",
+    "about": "О проекте",
+    "monitoring": "Мониторинг",
+    "architecture": "Архитектура",
+    "metrics": "Метрики"
+  },
+  "home": {
+    "title": "DevOps Инженер",
+    "subtitle": "Строю инфраструктуры и CI/CD, внедряю наблюдаемость и логирование. Сфокусирован на надёжности, безопасности и скорости поставки.",
+    "cta": {
+      "learn_more": "Подробнее",
+      "monitoring": "Мониторинг",
+      "architecture": "Архитектура"
+    },
+    "features": {
+      "cicd": {
+        "title": "CI/CD",
+        "description": "Автосборка, тесты, публикация образов и доставка на инфраструктуру."
+      },
+      "observability": {
+        "title": "Наблюдаемость",
+        "description": "Метрики Prometheus и графики Grafana для сервисов и узлов."
+      },
+      "logging": {
+        "title": "Логирование",
+        "description": "Loki/Promtail для централизованного сбора и анализа логов."
+      },
+      "infrastructure": {
+        "title": "Инфраструктура",
+        "description": "IaC с Terraform и Ansible. Контейнеризация и оркестрация."
+      }
+    },
+    "about_me": {
+      "title": "Обо мне",
+      "description": "DevOps/Platform инженер с более чем 10-летним опытом построения и поддержки инфраструктур. Специализируюсь на автоматизации процессов, создании воспроизводимых окружений и внедрении прозрачных пайплайнов доставки. Ценю надёжность, предсказуемость и метрики, которые помогают командам двигаться быстрее и безопаснее.",
+      "links": {
+        "linkedin": "LinkedIn",
+        "rabota": "rabota.by",
+        "email": "Email"
+      }
+    },
+    "experience": {
+      "title": "Опыт работы",
+      "years": "Более 10 лет.",
+      "description": "Опыт поддержки ИТ‑инфраструктур на разных проектах. Навыки работы с веб‑серверами, сетями, мониторингом, email, виртуализацией, СУБД, контейнеризацией.",
+      "skills_title": "Ключевые навыки DevOps (Junior):"
+    }
+  },
+  "monitoring": {
+    "title": "Мониторинг системы",
+    "subtitle": "Статус контейнеров и системные метрики",
+    "containers": {
+      "title": "Контейнеры",
+      "status": "Статус",
+      "uptime": "Время работы",
+      "refresh": "Обновить"
+    },
+    "system": {
+      "title": "Системные метрики",
+      "disk_usage": "Использование диска",
+      "memory": "Память",
+      "cpu": "Процессор"
+    }
+  },
+  "architecture": {
+    "title": "Архитектура проекта",
+    "subtitle": "Схема инфраструктуры и компонентов DevOps Portfolio",
+    "diagram_title": "Диаграмма архитектуры",
+    "components": {
+      "web_layer": {
+        "title": "Web Layer",
+        "description": "Nginx - Reverse proxy, маршрутизация запросов",
+        "ports": "Port 80 (HTTP), 443 (HTTPS)"
+      },
+      "app_layer": {
+        "title": "Application Layer",
+        "description": "Flask App - Основное приложение портфолио",
+        "ports": "Port 8000",
+        "functions": "Функции: Веб-интерфейс, API, метрики"
+      },
+      "monitoring_layer": {
+        "title": "Monitoring Layer",
+        "prometheus": "Prometheus - Сбор метрик",
+        "grafana": "Grafana - Визуализация и дашборды",
+        "ports": "Port 9090 (Prometheus), 3001 (Grafana)"
+      },
+      "logging_layer": {
+        "title": "Logging Layer",
+        "loki": "Loki - Агрегация логов",
+        "promtail": "Promtail - Сбор логов с контейнеров",
+        "ports": "Port 3100 (Loki)"
+      },
+      "cicd_layer": {
+        "title": "CI/CD Pipeline",
+        "github": "GitHub Actions - Автоматическое развертывание",
+        "ghcr": "GHCR - Реестр контейнеров",
+        "ansible": "Ansible - Конфигурационное управление",
+        "terraform": "Terraform - Инфраструктура как код"
+      },
+      "storage_layer": {
+        "title": "Storage",
+        "grafana_data": "Grafana Data - SQLite база данных",
+        "loki_data": "Loki Data - Файловая система"
+      }
+    },
+    "data_flows": {
+      "title": "Потоки данных",
+      "user_traffic": "Пользовательский трафик:",
+      "metrics": "Метрики:",
+      "logs": "Логи:",
+      "deployment": "Развертывание:"
+    },
+    "security": {
+      "title": "Безопасность",
+      "firewall": "Firewall: Настроен через Yandex Cloud Security Groups",
+      "https": "HTTPS: Let's Encrypt сертификаты",
+      "isolation": "Изоляция: Docker контейнеры в отдельной сети",
+      "access": "Доступ: SSH ключи для административного доступа"
+    }
+  },
+  "common": {
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успешно",
+    "refresh": "Обновить",
+    "back": "Назад",
+    "next": "Далее",
+    "close": "Закрыть",
+    "save": "Сохранить",
+    "cancel": "Отмена"
+  },
+  "footer": {
+    "copyright": "© 2025 DevOps Portfolio"
+  }
+}

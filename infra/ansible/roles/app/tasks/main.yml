@@ -147,6 +147,33 @@
     msg: "No dashboards were loaded in Grafana. Check the logs and configuration."
   when: dashboard_count == 0
 
+- name: Setup backup scripts
+  block:
+    - name: Create backup directory
+      file:
+        path: /opt/backups
+        state: directory
+        mode: '0755'
+
+    - name: Copy backup scripts
+      copy:
+        src: ../../../../infra/backup/
+        dest: /opt/devops-portfolio/infra/backup/
+        mode: '0755'
+
+    - name: Make backup scripts executable
+      file:
+        path: "{{ item }}"
+        mode: '0755'
+      loop:
+        - /opt/devops-portfolio/infra/backup/backup.sh
+        - /opt/devops-portfolio/infra/backup/restore.sh
+        - /opt/devops-portfolio/infra/backup/setup-cron.sh
+
+    - name: Setup automatic backups
+      shell: /opt/devops-portfolio/infra/backup/setup-cron.sh
+      ignore_errors: true
+
 - name: Show manual test commands
   debug:
     msg: |
@@ -154,6 +181,11 @@
       - docker ps -a
       - docker logs grafana
       - curl -u admin:{{ grafana_admin_password | default('admin') }} http://localhost:3001/api/search?type=dash-db
+      
+      Backup commands:
+      - /opt/devops-portfolio/infra/backup/backup.sh
+      - /opt/devops-portfolio/infra/backup/restore.sh /opt/backups/backup-file.tar.gz
+      - crontab -l
 
 - name: Create ACME health file in webroot
   command: docker exec nginx sh -c 'mkdir -p /var/www/certbot/.well-known/acme-challenge && echo ok > /var/www/certbot/.well-known/acme-challenge/health'

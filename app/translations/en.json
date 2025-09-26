@@ -1,0 +1,137 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "monitoring": "Monitoring",
+    "architecture": "Architecture",
+    "metrics": "Metrics"
+  },
+  "home": {
+    "title": "DevOps Engineer",
+    "subtitle": "Building infrastructures and CI/CD, implementing observability and logging. Focused on reliability, security and delivery speed.",
+    "cta": {
+      "learn_more": "Learn More",
+      "monitoring": "Monitoring",
+      "architecture": "Architecture"
+    },
+    "features": {
+      "cicd": {
+        "title": "CI/CD",
+        "description": "Auto-build, tests, image publishing and infrastructure delivery."
+      },
+      "observability": {
+        "title": "Observability",
+        "description": "Prometheus metrics and Grafana dashboards for services and nodes."
+      },
+      "logging": {
+        "title": "Logging",
+        "description": "Loki/Promtail for centralized log collection and analysis."
+      },
+      "infrastructure": {
+        "title": "Infrastructure",
+        "description": "IaC with Terraform and Ansible. Containerization and orchestration."
+      }
+    },
+    "about_me": {
+      "title": "About Me",
+      "description": "DevOps/Platform engineer with over 10 years of experience in building and supporting infrastructures. Specializing in process automation, creating reproducible environments and implementing transparent delivery pipelines. I value reliability, predictability and metrics that help teams move faster and safer.",
+      "links": {
+        "linkedin": "LinkedIn",
+        "rabota": "rabota.by",
+        "email": "Email"
+      }
+    },
+    "experience": {
+      "title": "Work Experience",
+      "years": "Over 10 years.",
+      "description": "Experience in supporting IT infrastructures on various projects. Skills in web servers, networks, monitoring, email, virtualization, databases, containerization.",
+      "skills_title": "Key DevOps Skills (Junior):"
+    }
+  },
+  "monitoring": {
+    "title": "System Monitoring",
+    "subtitle": "Container status and system metrics",
+    "containers": {
+      "title": "Containers",
+      "status": "Status",
+      "uptime": "Uptime",
+      "refresh": "Refresh"
+    },
+    "system": {
+      "title": "System Metrics",
+      "disk_usage": "Disk Usage",
+      "memory": "Memory",
+      "cpu": "CPU"
+    }
+  },
+  "architecture": {
+    "title": "Project Architecture",
+    "subtitle": "Infrastructure diagram and DevOps Portfolio components",
+    "diagram_title": "Architecture Diagram",
+    "components": {
+      "web_layer": {
+        "title": "Web Layer",
+        "description": "Nginx - Reverse proxy, request routing",
+        "ports": "Port 80 (HTTP), 443 (HTTPS)"
+      },
+      "app_layer": {
+        "title": "Application Layer",
+        "description": "Flask App - Main portfolio application",
+        "ports": "Port 8000",
+        "functions": "Functions: Web interface, API, metrics"
+      },
+      "monitoring_layer": {
+        "title": "Monitoring Layer",
+        "prometheus": "Prometheus - Metrics collection",
+        "grafana": "Grafana - Visualization and dashboards",
+        "ports": "Port 9090 (Prometheus), 3001 (Grafana)"
+      },
+      "logging_layer": {
+        "title": "Logging Layer",
+        "loki": "Loki - Log aggregation",
+        "promtail": "Promtail - Container log collection",
+        "ports": "Port 3100 (Loki)"
+      },
+      "cicd_layer": {
+        "title": "CI/CD Pipeline",
+        "github": "GitHub Actions - Automatic deployment",
+        "ghcr": "GHCR - Container registry",
+        "ansible": "Ansible - Configuration management",
+        "terraform": "Terraform - Infrastructure as code"
+      },
+      "storage_layer": {
+        "title": "Storage",
+        "grafana_data": "Grafana Data - SQLite database",
+        "loki_data": "Loki Data - File system"
+      }
+    },
+    "data_flows": {
+      "title": "Data Flows",
+      "user_traffic": "User traffic:",
+      "metrics": "Metrics:",
+      "logs": "Logs:",
+      "deployment": "Deployment:"
+    },
+    "security": {
+      "title": "Security",
+      "firewall": "Firewall: Configured via Yandex Cloud Security Groups",
+      "https": "HTTPS: Let's Encrypt certificates",
+      "isolation": "Isolation: Docker containers in separate network",
+      "access": "Access: SSH keys for administrative access"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "refresh": "Refresh",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "footer": {
+    "copyright": "© 2025 DevOps Portfolio"
+  }
+}

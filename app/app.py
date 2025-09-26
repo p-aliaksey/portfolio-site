@@ -1,12 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST
 from prometheus_client import Gauge
 import os
 import time
+from translations import translations, _
 
 
 def create_app() -> Flask:
     app = Flask(__name__, template_folder="templates", static_folder="static")
+    app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
     request_counter = Counter("http_requests_total", "HTTP requests total", ["path"]) 
     app_uptime_seconds = Gauge("app_uptime_seconds", "Application uptime in seconds")
@@ -35,7 +37,7 @@ def create_app() -> Flask:
     @app.route("/")
     def index():
         request_counter.labels(path="/").inc()
-        return render_template("index.html")
+        return render_template("index.html", t=translations.get_all_translations(), translations=translations)
 
     @app.route("/about")
     def about():
@@ -60,12 +62,17 @@ def create_app() -> Flask:
     @app.route("/monitoring")
     def monitoring():
         request_counter.labels(path="/monitoring").inc()
-        return render_template("monitoring.html")
+        return render_template("monitoring.html", t=translations.get_all_translations(), translations=translations)
     
     @app.route("/architecture")
     def architecture():
         request_counter.labels(path="/architecture").inc()
-        return render_template("architecture.html")
+        return render_template("architecture.html", t=translations.get_all_translations(), translations=translations)
+    
+    @app.route("/set_language/<lang>")
+    def set_language(lang):
+        translations.set_language(lang)
+        return redirect(request.referrer or url_for('index'))
     
     @app.route("/api/system/disk")
     def system_disk():
@@ -93,6 +100,109 @@ def create_app() -> Flask:
             return {"containers": static_containers, "debug": {"method": "static_fallback"}}
         except Exception as e:
             return {"error": str(e), "containers": [], "debug": {"exception": str(e)}}
+    
+    @app.route("/api/system/backups")
+    def system_backups():
+        try:
+            import os
+            import glob
+            import subprocess
+            from datetime import datetime, timedelta
+            
+            backup_dir = "/opt/backups"
+            backup_stats = {
+                "total_backups": 0,
+                "total_size": "0 MB",
+                "last_backup": None,
+                "oldest_backup": None,
+                "backups": [],
+                "cron_status": "Unknown",
+                "backup_health": "Unknown"
+            }
+            
+            # Проверяем существование директории бэкапов
+            if os.path.exists(backup_dir):
+                # Получаем список файлов бэкапов
+                backup_files = glob.glob(os.path.join(backup_dir, "devops-portfolio-backup-*.tar.gz"))
+                backup_files.sort(key=os.path.getmtime, reverse=True)
+                
+                backup_stats["total_backups"] = len(backup_files)
+                
+                if backup_files:
+                    # Размер всех бэкапов
+                    total_size = sum(os.path.getsize(f) for f in backup_files)
+                    backup_stats["total_size"] = f"{total_size / (1024*1024):.1f} MB"
+                    
+                    # Последний бэкап
+                    last_backup = backup_files[0]
+                    last_backup_time = datetime.fromtimestamp(os.path.getmtime(last_backup))
+                    backup_stats["last_backup"] = last_backup_time.strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    # Самый старый бэкап
+                    oldest_backup = backup_files[-1]
+                    oldest_backup_time = datetime.fromtimestamp(os.path.getmtime(oldest_backup))
+                    backup_stats["oldest_backup"] = oldest_backup_time.strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    # Детали по каждому бэкапу
+                    for backup_file in backup_files[:10]:  # Показываем только последние 10
+                        file_stat = os.stat(backup_file)
+                        file_size = file_stat.st_size
+                        file_time = datetime.fromtimestamp(file_stat.st_mtime)
+                        
+                        # Определяем возраст бэкапа
+                        age_days = (datetime.now() - file_time).days
+                        if age_days == 0:
+                            age_text = "Сегодня"
+                        elif age_days == 1:
+                            age_text = "Вчера"
+                        else:
+                            age_text = f"{age_days} дн. назад"
+                        
+                        backup_stats["backups"].append({
+                            "filename": os.path.basename(backup_file),
+                            "size": f"{file_size / (1024*1024):.1f} MB",
+                            "date": file_time.strftime("%Y-%m-%d %H:%M:%S"),
+                            "age": age_text,
+                            "path": backup_file
+                        })
+                    
+                    # Проверяем здоровье бэкапов
+                    recent_backup = backup_files[0]
+                    recent_backup_time = datetime.fromtimestamp(os.path.getmtime(recent_backup))
+                    hours_since_backup = (datetime.now() - recent_backup_time).total_seconds() / 3600
+                    
+                    if hours_since_backup < 25:  # Бэкап был в последние 25 часов
+                        backup_stats["backup_health"] = "Healthy"
+                    elif hours_since_backup < 49:  # Бэкап был в последние 49 часов
+                        backup_stats["backup_health"] = "Warning"
+                    else:
+                        backup_stats["backup_health"] = "Critical"
+                else:
+                    backup_stats["backup_health"] = "No Backups"
+            
+            # Проверяем статус cron задач
+            try:
+                result = subprocess.run(['crontab', '-l'], capture_output=True, text=True, timeout=5)
+                if "backup.sh" in result.stdout:
+                    backup_stats["cron_status"] = "Active"
+                else:
+                    backup_stats["cron_status"] = "Not Found"
+            except:
+                backup_stats["cron_status"] = "Unknown"
+            
+            return backup_stats
+            
+        except Exception as e:
+            return {
+                "error": str(e),
+                "total_backups": 0,
+                "total_size": "0 MB",
+                "last_backup": None,
+                "oldest_backup": None,
+                "backups": [],
+                "cron_status": "Error",
+                "backup_health": "Error"
+            }
 
     return app
 
