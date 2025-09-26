@@ -1,6 +1,7 @@
 services:
   app:
-    image: "{{ (app_image | default('ghcr.io/' ~ github_repository ~ ':latest')) | string }}"
+    build: .
+    image: devops-portfolio:local
     container_name: app
     ports:
       - "8000:8000"
@@ -8,6 +9,9 @@ services:
       - PORT=8000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /opt/backups:/opt/backups
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     labels:
       - "logging=promtail"
   nginx:
@@ -42,7 +46,7 @@ services:
     ports:
       - "3001:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD={{ grafana_admin_password | default('admin') }}
+      - GF_SECURITY_ADMIN_PASSWORD={{ grafana_admin_password | default('QAwsEDrf') }}
       - GF_SERVER_ROOT_URL=http://pishchik-dev.tech:3001/
       - GF_SERVER_SERVE_FROM_SUB_PATH=false
       - GF_SERVER_DOMAIN=pishchik-dev.tech
