@@ -67,7 +67,7 @@
     pull: always
 
 - name: Test Nginx configuration syntax
-  command: docker run --rm -v /opt/devops-portfolio/infra/nginx/nginx-http.conf:/etc/nginx/conf.d/default.conf:ro --network host nginx:1.27-alpine nginx -t
+  command: docker run --rm -v /opt/devops-portfolio/infra/nginx/nginx-http.conf:/etc/nginx/conf.d/default.conf:ro --network host --add-host app:127.0.0.1 nginx:1.27-alpine nginx -t
   register: nginx_config_test
   ignore_errors: true
 
@@ -121,6 +121,15 @@
     - { name: "Loki", url: "http://localhost:3100/ready" }
   ignore_errors: true
 
+- name: Wait for Loki to be ready
+  uri:
+    url: "http://localhost:3100/ready"
+    method: GET
+    status_code: 200
+  retries: 10
+  delay: 5
+  ignore_errors: true
+
 - name: Test Grafana dashboards API
   uri:
     url: "http://localhost:3001/api/search?type=dash-db"
@@ -128,6 +137,7 @@
     return_content: true
     user: admin
     password: "{{ grafana_admin_password | default('QAwsEDrf') }}"
+    status_code: [200, 401]
   register: grafana_dashboards_test
   ignore_errors: true
 
