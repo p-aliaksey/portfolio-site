@@ -58,37 +58,65 @@ backup_docker_configs() {
     log "Создание бэкапа конфигураций Docker..."
     mkdir -p "${BACKUP_PATH}/docker"
     
-    # Копируем docker-compose.yml
-    if [ -f "/opt/devops-portfolio/docker-compose.yml" ]; then
-        cp "/opt/devops-portfolio/docker-compose.yml" "${BACKUP_PATH}/docker/"
-        log "✓ docker-compose.yml скопирован"
-    else
-        warning "docker-compose.yml не найден в /opt/devops-portfolio/"
-        # Проверяем альтернативные пути
-        if [ -f "/app/docker-compose.yml" ]; then
-            cp "/app/docker-compose.yml" "${BACKUP_PATH}/docker/"
-            log "✓ docker-compose.yml найден в /app/"
-        else
-            warning "docker-compose.yml не найден ни в одном из путей"
+    # Копируем docker-compose.yml - проверяем все возможные пути
+    local docker_compose_found=false
+    
+    for path in "/opt/devops-portfolio/docker-compose.yml" "/app/docker-compose.yml" "/opt/devops-portfolio/infra/docker-compose.yml"; do
+        if [ -f "$path" ]; then
+            cp "$path" "${BACKUP_PATH}/docker/"
+            log "✓ docker-compose.yml скопирован из $path"
+            docker_compose_found=true
+            break
         fi
+    done
+    
+    if [ "$docker_compose_found" = false ]; then
+        warning "docker-compose.yml не найден ни в одном из путей"
     fi
     
-    # Копируем конфигурации Nginx
-    if [ -d "/opt/devops-portfolio/infra/nginx" ]; then
-        cp -r "/opt/devops-portfolio/infra/nginx" "${BACKUP_PATH}/docker/"
-        log "✓ Конфигурации Nginx скопированы"
+    # Копируем конфигурации Nginx - проверяем все возможные пути
+    local nginx_found=false
+    for path in "/opt/devops-portfolio/infra/nginx" "/app/infra/nginx" "/opt/devops-portfolio/nginx"; do
+        if [ -d "$path" ]; then
+            cp -r "$path" "${BACKUP_PATH}/docker/"
+            log "✓ Конфигурации Nginx скопированы из $path"
+            nginx_found=true
+            break
+        fi
+    done
+    
+    if [ "$nginx_found" = false ]; then
+        warning "Конфигурации Nginx не найдены"
     fi
     
-    # Копируем конфигурации мониторинга
-    if [ -d "/opt/devops-portfolio/infra/monitoring" ]; then
-        cp -r "/opt/devops-portfolio/infra/monitoring" "${BACKUP_PATH}/docker/"
-        log "✓ Конфигурации мониторинга скопированы"
+    # Копируем конфигурации мониторинга - проверяем все возможные пути
+    local monitoring_found=false
+    for path in "/opt/devops-portfolio/infra/monitoring" "/app/infra/monitoring" "/opt/devops-portfolio/monitoring"; do
+        if [ -d "$path" ]; then
+            cp -r "$path" "${BACKUP_PATH}/docker/"
+            log "✓ Конфигурации мониторинга скопированы из $path"
+            monitoring_found=true
+            break
+        fi
+    done
+    
+    if [ "$monitoring_found" = false ]; then
+        warning "Конфигурации мониторинга не найдены"
     fi
     
-    # Копируем конфигурации логирования
-    if [ -d "/opt/devops-portfolio/infra/logging" ]; then
-        cp -r "/opt/devops-portfolio/infra/logging" "${BACKUP_PATH}/docker/"
-        log "✓ Конфигурации логирования скопированы"
+    # Копируем конфигурации логирования - проверяем все возможные пути
+    local logging_found=false
+    for path in "/opt/devops-portfolio/infra/logging" "/app/infra/logging" "/opt/devops-portfolio/logging"; do
+        if [ -d "$path" ]; then
+            cp -r "$path" "${BACKUP_PATH}/docker/"
+            log "✓ Конфигурации логирования скопированы из $path"
+            logging_found=true
+            break
+        fi
+    done
+    
+    if [ "$logging_found" = false ]; then
+        warning "Конфигурации логирования не найдены"
     fi
 }
 
@@ -97,26 +125,50 @@ backup_app_data() {
     log "Создание бэкапа данных приложения..."
     mkdir -p "${BACKUP_PATH}/app"
     
-    # Копируем исходный код приложения
-    if [ -d "/opt/devops-portfolio/app" ]; then
-        cp -r "/opt/devops-portfolio/app" "${BACKUP_PATH}/"
-        log "✓ Исходный код приложения скопирован"
-    elif [ -d "/app" ]; then
-        cp -r "/app" "${BACKUP_PATH}/"
-        log "✓ Исходный код приложения скопирован из /app"
+    # Копируем исходный код приложения - проверяем все возможные пути
+    local app_found=false
+    for path in "/opt/devops-portfolio/app" "/app" "/opt/devops-portfolio"; do
+        if [ -d "$path" ]; then
+            cp -r "$path" "${BACKUP_PATH}/"
+            log "✓ Исходный код приложения скопирован из $path"
+            app_found=true
+            break
+        fi
+    done
+    
+    if [ "$app_found" = false ]; then
+        warning "Исходный код приложения не найден"
     fi
     
-    # Копируем статические файлы
-    if [ -d "/opt/devops-portfolio/static" ]; then
-        cp -r "/opt/devops-portfolio/static" "${BACKUP_PATH}/"
-        log "✓ Статические файлы скопированы"
+    # Копируем статические файлы - проверяем все возможные пути
+    local static_found=false
+    for path in "/opt/devops-portfolio/static" "/app/static" "/opt/devops-portfolio/app/static"; do
+        if [ -d "$path" ]; then
+            cp -r "$path" "${BACKUP_PATH}/"
+            log "✓ Статические файлы скопированы из $path"
+            static_found=true
+            break
+        fi
+    done
+    
+    if [ "$static_found" = false ]; then
+        warning "Статические файлы не найдены"
     fi
     
-    # Копируем README и другие важные файлы
+    # Копируем README и другие важные файлы - проверяем все возможные пути
     for file in README.md LICENSE Dockerfile; do
-        if [ -f "/opt/devops-portfolio/$file" ]; then
-            cp "/opt/devops-portfolio/$file" "${BACKUP_PATH}/"
-            log "✓ $file скопирован"
+        local file_found=false
+        for path in "/opt/devops-portfolio/$file" "/app/$file" "/opt/devops-portfolio/infra/$file"; do
+            if [ -f "$path" ]; then
+                cp "$path" "${BACKUP_PATH}/"
+                log "✓ $file скопирован из $path"
+                file_found=true
+                break
+            fi
+        done
+        
+        if [ "$file_found" = false ]; then
+            warning "$file не найден"
         fi
     done
 }

@@ -195,7 +195,9 @@ def create_app() -> Flask:
                 cron_files = [
                     '/etc/crontab',
                     '/var/spool/cron/crontabs/ubuntu',
-                    '/var/spool/cron/crontabs/root'
+                    '/var/spool/cron/crontabs/root',
+                    '/var/spool/cron/ubuntu',
+                    '/var/spool/cron/root'
                 ]
                 
                 cron_found = False
@@ -203,11 +205,20 @@ def create_app() -> Flask:
                     try:
                         with open(cron_file, 'r') as f:
                             content = f.read()
-                            if 'backup.sh' in content:
+                            if 'backup.sh' in content or 'devops-portfolio' in content:
                                 cron_found = True
                                 break
                     except:
                         continue
+                
+                # Дополнительная проверка через crontab -l
+                if not cron_found:
+                    try:
+                        result = subprocess.run(['crontab', '-l'], capture_output=True, text=True, timeout=5)
+                        if result.returncode == 0 and ('backup.sh' in result.stdout or 'devops-portfolio' in result.stdout):
+                            cron_found = True
+                    except:
+                        pass
                 
                 if cron_found:
                     backup_stats["cron_status"] = "Active"
@@ -217,7 +228,7 @@ def create_app() -> Flask:
                 backup_stats["cron_status"] = "Unknown"
             
             return backup_stats
-            
+
         except Exception as e:
             return {
                 "error": str(e),
