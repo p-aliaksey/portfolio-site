@@ -46,3 +46,4 @@ docker-compose.yml
 License
 MIT
 v_24.5(Latest)
+v_25
