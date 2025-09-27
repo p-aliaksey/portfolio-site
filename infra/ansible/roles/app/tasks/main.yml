@@ -114,6 +114,11 @@
     # Удаляем все контейнеры проекта принудительно
     docker rm -f $(docker ps -aq --filter "name=devops-portfolio") 2>/dev/null || true
     docker rm -f $(docker ps -aq --filter "name=promtail") 2>/dev/null || true
+    docker rm -f $(docker ps -aq --filter "name=app") 2>/dev/null || true
+    docker rm -f $(docker ps -aq --filter "name=nginx") 2>/dev/null || true
+    docker rm -f $(docker ps -aq --filter "name=prometheus") 2>/dev/null || true
+    docker rm -f $(docker ps -aq --filter "name=grafana") 2>/dev/null || true
+    docker rm -f $(docker ps -aq --filter "name=loki") 2>/dev/null || true
   ignore_errors: true
 
 - name: Build and start containers
