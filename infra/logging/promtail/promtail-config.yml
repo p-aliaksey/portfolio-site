@@ -13,42 +13,29 @@ scrape_configs:
     docker_sd_configs:
       - host: unix:///var/run/docker.sock
         refresh_interval: 5s
-    pipeline_stages:
-      - docker: {}   # распарсить JSON-логи Docker
     relabel_configs:
       # Фильтруем только работающие контейнеры
       - source_labels: ['__meta_docker_container_state']
         regex: running
         action: keep
-
+      
       # Исключаем сам Promtail
       - source_labels: ['__meta_docker_container_name']
         regex: '.*/?promtail'
         action: drop
-
-      # Имя контейнера (без / в начале)
+      
+      # Обязательные лейблы для Loki
       - source_labels: ['__meta_docker_container_name']
         target_label: container
         regex: '/(.*)'
         replacement: '${1}'
-
-      # ID контейнера
-      - source_labels: ['__meta_docker_container_id']
-        target_label: container_id
-
-      # Сервис (если есть docker-compose)
+      
       - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
         target_label: service
-
-      # Фиксированный job
+      
       - target_label: job
         replacement: docker
-
-      # Путь к логам контейнера
-      - source_labels: ['__meta_docker_container_id']
-        target_label: __path__
-        replacement: /var/lib/docker/containers/${1}/*.log
-
+      
       # Убираем служебные метки
       - action: labeldrop
         regex: '__meta.*'
