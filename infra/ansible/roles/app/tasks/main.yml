@@ -107,6 +107,19 @@
     password: "{{ ghcr_token | default(omit) }}"
   when: ghcr_username is defined and ghcr_token is defined
 
+- name: Pull required Docker images
+  community.docker.docker_image:
+    name: "{{ item }}"
+    source: pull
+  loop:
+    - nginx:1.27-alpine
+    - prom/prometheus:latest
+    - grafana/grafana:latest
+    - grafana/loki:latest
+    - grafana/promtail:latest
+    - certbot/certbot:latest
+  ignore_errors: true
+
 - name: Stop all existing containers
   shell: |
     cd /opt/devops-portfolio
@@ -125,7 +138,7 @@
   community.docker.docker_compose_v2:
     project_src: /opt/devops-portfolio
     build: always
-    pull: never
+    pull: always
 
 - name: Test Nginx configuration syntax
   command: docker run --rm -v /opt/devops-portfolio/infra/nginx/nginx-http.conf:/etc/nginx/conf.d/default.conf:ro --network host --add-host app:127.0.0.1 --add-host prometheus:127.0.0.1 --add-host grafana:127.0.0.1 --add-host loki:127.0.0.1 nginx:1.27-alpine nginx -t
@@ -382,10 +395,16 @@
   until: acme_health.status == 200 and acme_health.content is search('ok')
   when: enable_https | default(false) | bool
 
+- name: Pull Certbot image
+  community.docker.docker_image:
+    name: certbot/certbot:latest
+    source: pull
+  when: enable_https | default(false) | bool
+
 - name: Obtain SSL certificates
   community.docker.docker_container:
     name: certbot-ssl
-    image: certbot/certbot:v2.8.0
+    image: certbot/certbot:latest
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
       - /opt/devops-portfolio/infra/nginx/webroot:/var/www/certbot
