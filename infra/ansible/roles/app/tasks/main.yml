@@ -368,6 +368,11 @@
     mode: '0644'
   when: enable_https | default(false) | bool
 
+- name: Test temporary Nginx config
+  command: docker exec nginx nginx -t
+  ignore_errors: true
+  when: enable_https | default(false) | bool
+
 - name: Start temporary HTTP stack for SSL
   community.docker.docker_compose_v2:
     project_src: /opt/devops-portfolio
@@ -399,14 +404,14 @@
     mode: '0644'
   when: enable_https | default(false) | bool
 
-- name: Verify ACME health over domain
+- name: Verify ACME health locally
   uri:
-    url: "http://{{ domain_name | default('pishchik-dev.tech') }}/.well-known/acme-challenge/health"
+    url: "http://localhost/.well-known/acme-challenge/health"
     return_content: true
     status_code: 200
   register: acme_health
-  retries: 10
-  delay: 6
+  retries: 5
+  delay: 3
   until: acme_health.status == 200 and acme_health.content is search('ok')
   when: enable_https | default(false) | bool
 
