@@ -9,58 +9,33 @@ clients:
   - url: http://loki:3100/loki/api/v1/push
 
 scrape_configs:
-  # Статическая конфигурация для каждого контейнера
-  - job_name: app-logs
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: docker
-          container: app
-          service: app
-    pipeline_stages:
-      - docker: {}
-
-  - job_name: nginx-logs
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: docker
-          container: nginx
-          service: nginx
-    pipeline_stages:
-      - docker: {}
-
-  - job_name: prometheus-logs
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: docker
-          container: prometheus
-          service: prometheus
-    pipeline_stages:
-      - docker: {}
-
-  - job_name: grafana-logs
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: docker
-          container: grafana
-          service: grafana
-    pipeline_stages:
-      - docker: {}
-
-  - job_name: loki-logs
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: docker
-          container: loki
-          service: loki
-    pipeline_stages:
-      - docker: {}
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      # Фильтруем только работающие контейнеры
+      - source_labels: ['__meta_docker_container_state']
+        regex: running
+        action: keep
+      
+      # Исключаем сам Promtail
+      - source_labels: ['__meta_docker_container_name']
+        regex: '.*/?promtail'
+        action: drop
+      
+      # Обязательные лейблы для Loki
+      - source_labels: ['__meta_docker_container_name']
+        target_label: container
+        regex: '/(.*)'
+        replacement: '${1}'
+      
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+        target_label: service
+      
+      - target_label: job
+        replacement: docker
+      
+      # Убираем служебные метки
+      - action: labeldrop
+        regex: '__meta.*'
