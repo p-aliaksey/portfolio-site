@@ -14,19 +14,22 @@ scrape_configs:
       - host: unix:///var/run/docker.sock
         refresh_interval: 5s
     relabel_configs:
-      # Обязательные лейблы для Loki
+      # имя контейнера
       - source_labels: ['__meta_docker_container_name']
-        target_label: container_name
+        target_label: container
+      # id контейнера
       - source_labels: ['__meta_docker_container_id']
         target_label: container_id
+      # service из compose
       - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
         target_label: service
+      # фиксированный job (обязательный лейбл для Loki)
       - target_label: job
-        replacement: 'docker'
-      # Добавляем фиксированный лейбл для всех контейнеров
-      - target_label: level
-        replacement: 'info'
-      # Фильтруем только работающие контейнеры
+        replacement: docker
+      # оставляем только работающие контейнеры
       - source_labels: ['__meta_docker_container_state']
         regex: running
         action: keep
+      # убираем служебные метки, чтобы не засоряли
+      - regex: '__meta.*'
+        action: labeldrop
