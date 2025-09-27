@@ -93,12 +93,6 @@
       debug:
         msg: "Dashboard files uploaded to /opt/devops-portfolio/infra/monitoring/grafana/dashboards/"
 
-    - name: Stop Promtail to update configuration
-      community.docker.docker_container:
-        name: promtail
-        state: stopped
-      ignore_errors: true
-
     - name: Copy updated Promtail configuration
       copy:
         src: ../../../../infra/logging/promtail/promtail-config.yml
@@ -106,22 +100,21 @@
         mode: '0644'
         force: true
 
-    - name: Start Promtail with new configuration
-      community.docker.docker_container:
-        name: promtail
-        state: started
-      ignore_errors: true
-
-    - name: Wait for Promtail to start
-      pause:
-        seconds: 15
-
 - name: Login to GHCR (optional)
   community.docker.docker_login:
     registry_url: ghcr.io
     username: "{{ ghcr_username | default(omit) }}"
     password: "{{ ghcr_token | default(omit) }}"
   when: ghcr_username is defined and ghcr_token is defined
+
+- name: Stop all existing containers
+  shell: |
+    cd /opt/devops-portfolio
+    docker compose down 2>/dev/null || true
+    # Удаляем все контейнеры проекта принудительно
+    docker ps -a --filter "name=devops-portfolio" --format "{{.Names}}" | xargs -r docker rm -f 2>/dev/null || true
+    docker ps -a --filter "name=promtail" --format "{{.Names}}" | xargs -r docker rm -f 2>/dev/null || true
+  ignore_errors: true
 
 - name: Build and start containers
   community.docker.docker_compose_v2:
