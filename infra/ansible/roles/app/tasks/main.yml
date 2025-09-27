@@ -385,6 +385,13 @@
     timeout: 30
   when: enable_https | default(false) | bool
 
+- name: Create ACME challenge directory
+  file:
+    path: /opt/devops-portfolio/infra/nginx/webroot/.well-known/acme-challenge
+    state: directory
+    mode: '0755'
+  when: enable_https | default(false) | bool
+
 - name: Create ACME health file in webroot
   copy:
     content: "ok"
