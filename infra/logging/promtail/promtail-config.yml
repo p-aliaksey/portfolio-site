@@ -33,6 +33,6 @@ scrape_configs:
       # Service из compose
       - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
         target_label: service
-      # Убираем служебные метки
+      # Убираем служебные метки (но оставляем job, container, service)
       - action: labeldrop
-        regex: '__.*'
+        regex: '__meta.*'
