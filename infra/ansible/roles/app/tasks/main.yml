@@ -93,15 +93,28 @@
       debug:
         msg: "Dashboard files uploaded to /opt/devops-portfolio/infra/monitoring/grafana/dashboards/"
 
-    - name: Restart Promtail to apply new configuration
+    - name: Stop Promtail to update configuration
       community.docker.docker_container:
         name: promtail
-        state: restarted
+        state: stopped
+      ignore_errors: true
+
+    - name: Copy updated Promtail configuration
+      copy:
+        src: ../../../../infra/logging/promtail/promtail-config.yml
+        dest: /opt/devops-portfolio/infra/logging/promtail/promtail-config.yml
+        mode: '0644'
+        force: true
+
+    - name: Start Promtail with new configuration
+      community.docker.docker_container:
+        name: promtail
+        state: started
       ignore_errors: true
 
     - name: Wait for Promtail to start
       pause:
-        seconds: 10
+        seconds: 15
 
 - name: Login to GHCR (optional)
   community.docker.docker_login:
