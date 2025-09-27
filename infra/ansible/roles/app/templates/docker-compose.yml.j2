@@ -22,7 +22,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./infra/nginx/nginx-https.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./infra/nginx/nginx-http.conf:/etc/nginx/conf.d/default.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - ./infra/nginx/webroot:/var/www/certbot:ro
     labels:

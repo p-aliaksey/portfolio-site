@@ -356,7 +356,7 @@
 - name: Upload temporary Nginx config for SSL
   copy:
     src: ../../../../infra/nginx/nginx-temp.conf
-    dest: /opt/devops-portfolio/infra/nginx/nginx-temp.conf
+    dest: /opt/devops-portfolio/infra/nginx/nginx-http.conf
     mode: '0644'
   when: enable_https | default(false) | bool
 
@@ -415,7 +415,7 @@
 - name: Upload Nginx config (HTTPS)
   copy:
     src: ../../../../infra/nginx/nginx-https.conf
-    dest: /opt/devops-portfolio/infra/nginx/nginx-https.conf
+    dest: /opt/devops-portfolio/infra/nginx/nginx-http.conf
     mode: '0644'
   when: enable_https | default(false) | bool
 
@@ -432,4 +432,10 @@
   community.docker.docker_compose_v2:
     project_src: /opt/devops-portfolio
     state: started
+  when: enable_https | default(false) | bool
+
+- name: Reload Nginx to pick up HTTPS config
+  community.docker.docker_container:
+    name: nginx
+    state: reloaded
   when: enable_https | default(false) | bool
