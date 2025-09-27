@@ -329,17 +329,17 @@
     state: started
   ignore_errors: true
 
-    - name: Verify backup script is updated
-      shell: |
-        if docker ps | grep -q app; then
-          docker exec app grep -q "docker_compose_found" /opt/devops-portfolio/infra/backup/backup.sh
-        fi
-      register: script_updated
-      ignore_errors: true
+- name: Verify backup script is updated
+  shell: |
+    if docker ps | grep -q app; then
+      docker exec app grep -q "docker_compose_found" /opt/devops-portfolio/infra/backup/backup.sh
+    fi
+  register: script_updated
+  ignore_errors: true
 
-    - name: Display script update status
-      debug:
-        msg: "Backup script updated: {{ 'Yes' if script_updated.rc == 0 else 'No' }}"
+- name: Display script update status
+  debug:
+    msg: "Backup script updated: {{ 'Yes' if script_updated.rc == 0 else 'No' }}"
 
 - name: Show manual test commands
   debug:
