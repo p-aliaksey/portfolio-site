@@ -115,9 +115,23 @@ def create_app() -> Flask:
             if os.path.exists("/opt/backups"):
                 # Продакшен: читаем бэкапы напрямую из /opt/backups
                 backup_dir = "/opt/backups"
+                
+                # Проверяем есть ли большие бэкапы (автоматические)
+                backup_files = glob.glob(os.path.join(backup_dir, "devops-portfolio-backup-*.tar.gz"))
+                if backup_files:
+                    # Сортируем по размеру, берем самый большой
+                    backup_files.sort(key=lambda x: os.path.getsize(x), reverse=True)
+                    largest_backup = backup_files[0]
+                    largest_size = os.path.getsize(largest_backup)
+                    
+                    # Если есть бэкап больше 1MB, используем его для статистики
+                    if largest_size > 1024*1024:  # Больше 1MB
+                        # Используем только большие бэкапы для статистики
+                        backup_files = [f for f in backup_files if os.path.getsize(f) > 1024*1024]
             else:
                 # Локальная разработка
                 backup_dir = os.path.join(os.getcwd(), "test-backups")
+                backup_files = glob.glob(os.path.join(backup_dir, "devops-portfolio-backup-*.tar.gz"))
             
             backup_stats = {
                 "total_backups": 0,
@@ -126,13 +140,18 @@ def create_app() -> Flask:
                 "oldest_backup": None,
                 "backups": [],
                 "cron_status": "Unknown",
-                "backup_health": "Unknown"
+                "backup_health": "Unknown",
+                "debug": {
+                    "backup_dir": backup_dir,
+                    "backup_files_count": len(backup_files) if 'backup_files' in locals() else 0
+                }
             }
             
             # Проверяем существование директории бэкапов
             if os.path.exists(backup_dir):
-                # Получаем список файлов бэкапов
-                backup_files = glob.glob(os.path.join(backup_dir, "devops-portfolio-backup-*.tar.gz"))
+                # backup_files уже определены выше
+                if not backup_files:
+                    backup_files = glob.glob(os.path.join(backup_dir, "devops-portfolio-backup-*.tar.gz"))
                 backup_files.sort(key=os.path.getmtime, reverse=True)
                 
                 backup_stats["total_backups"] = len(backup_files)
