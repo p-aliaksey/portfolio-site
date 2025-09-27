@@ -1,0 +1,129 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Logs Metrics",
+    "tags": ["logs", "metrics"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Log Volume by Container",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "sum(rate(loki_distributor_lines_received_total[5m])) by (container_name)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "logs/sec",
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Total Log Lines",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(loki_distributor_lines_received_total)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Error Rate",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "sum(rate(loki_distributor_lines_received_total{level=\"error\"}[5m])) / sum(rate(loki_distributor_lines_received_total[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Log Storage Usage",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "loki_ingester_memory_chunks",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "HTTP Status Codes",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "sum(rate(loki_distributor_lines_received_total{job=\"docker\", container_name=\"nginx\"} |= \"200\"[5m])) by (status)",
+            "refId": "A",
+            "legendFormat": "200 OK"
+          },
+          {
+            "expr": "sum(rate(loki_distributor_lines_received_total{job=\"docker\", container_name=\"nginx\"} |= \"404\"[5m])) by (status)",
+            "refId": "B",
+            "legendFormat": "404 Not Found"
+          },
+          {
+            "expr": "sum(rate(loki_distributor_lines_received_total{job=\"docker\", container_name=\"nginx\"} |= \"500\"[5m])) by (status)",
+            "refId": "C",
+            "legendFormat": "500 Server Error"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "logs/sec",
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  },
+  "overwrite": true
+}
