@@ -340,6 +340,30 @@
     state: directory
     mode: '0755'
 
+- name: Upload temporary Nginx config for SSL
+  copy:
+    src: ../../../../infra/nginx/nginx-temp.conf
+    dest: /opt/devops-portfolio/infra/nginx/nginx-temp.conf
+    mode: '0644'
+  when: enable_https | default(false) | bool
+
+- name: Start temporary HTTP stack for SSL
+  community.docker.docker_compose_v2:
+    project_src: /opt/devops-portfolio
+    services:
+      - nginx
+      - app
+    state: started
+  when: enable_https | default(false) | bool
+
+- name: Wait for HTTP stack to be ready
+  wait_for:
+    host: 127.0.0.1
+    port: 80
+    delay: 5
+    timeout: 30
+  when: enable_https | default(false) | bool
+
 - name: Create ACME health file in webroot
   copy:
     content: "ok"
@@ -358,27 +382,35 @@
   until: acme_health.status == 200 and acme_health.content is search('ok')
   when: enable_https | default(false) | bool
 
-- name: Obtain/renew certificates (webroot)
-  community.docker.docker_compose_v2:
-    project_src: /opt/devops-portfolio
-    services:
-      - certbot
-    state: present
-  when: enable_https | default(false) | bool
-
-- name: Issue certificate inside certbot service if not exists
-  command: >-
-    docker compose -f /opt/devops-portfolio/docker-compose.yml exec -T certbot sh -lc
-    "test -f /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem || certbot certonly --agree-tos --email {{ letsencrypt_email }} --non-interactive --webroot -w /var/www/certbot -d {{ domain_name }}"
+- name: Obtain SSL certificates
+  community.docker.docker_container:
+    name: certbot-ssl
+    image: certbot/certbot:v2.8.0
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /opt/devops-portfolio/infra/nginx/webroot:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email {{ ssl_email | default('admin@pishchik-dev.tech') }} --agree-tos --no-eff-email -d {{ domain_name | default('pishchik-dev.tech') }} -d www.{{ domain_name | default('pishchik-dev.tech') }}
+    state: started
   when: enable_https | default(false) | bool
 
 - name: Upload Nginx config (HTTPS)
-  template:
-    src: ../templates/nginx-default.conf.j2
-    dest: /opt/devops-portfolio/infra/nginx/default.conf
+  copy:
+    src: ../../../../infra/nginx/nginx-https.conf
+    dest: /opt/devops-portfolio/infra/nginx/nginx-https.conf
     mode: '0644'
   when: enable_https | default(false) | bool
 
-- name: Reload Nginx to pick up certs
-  command: docker exec nginx nginx -s reload
+- name: Stop temporary HTTP stack
+  community.docker.docker_compose_v2:
+    project_src: /opt/devops-portfolio
+    services:
+      - nginx
+      - app
+    state: stopped
+  when: enable_https | default(false) | bool
+
+- name: Start full HTTPS stack
+  community.docker.docker_compose_v2:
+    project_src: /opt/devops-portfolio
+    state: started
   when: enable_https | default(false) | bool
