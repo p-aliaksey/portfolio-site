@@ -317,11 +317,17 @@
         fi
       ignore_errors: true
 
-    - name: Restart app container to ensure script is updated
-      community.docker.docker_container:
-        name: app
-        state: restarted
-      ignore_errors: true
+- name: Restart app container to ensure script is updated
+  community.docker.docker_container:
+    name: app
+    state: stopped
+  ignore_errors: true
+
+- name: Start app container after restart
+  community.docker.docker_container:
+    name: app
+    state: started
+  ignore_errors: true
 
     - name: Verify backup script is updated
       shell: |
@@ -368,7 +374,7 @@
     services:
       - nginx
       - app
-    state: started
+    state: present
   when: enable_https | default(false) | bool
 
 - name: Wait for HTTP stack to be ready
@@ -427,17 +433,23 @@
     services:
       - nginx
       - app
-    state: stopped
+    state: absent
   when: enable_https | default(false) | bool
 
 - name: Start full HTTPS stack
   community.docker.docker_compose_v2:
     project_src: /opt/devops-portfolio
-    state: started
+    state: present
   when: enable_https | default(false) | bool
 
 - name: Reload Nginx to pick up HTTPS config
   community.docker.docker_container:
     name: nginx
-    state: reloaded
+    state: stopped
+  when: enable_https | default(false) | bool
+
+- name: Start Nginx after reload
+  community.docker.docker_container:
+    name: nginx
+    state: started
   when: enable_https | default(false) | bool
