@@ -22,17 +22,9 @@ scrape_configs:
       - source_labels: ['__meta_docker_container_state']
         regex: running
         action: keep
-      # Обязательный job для всех контейнеров
-      - target_label: job
-        replacement: docker
-      # Имя контейнера
-      - source_labels: ['__meta_docker_container_name']
-        target_label: container
-        regex: '/(.*)'
-        replacement: '${1}'
-      # Service из compose
-      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
-        target_label: service
-      # Убираем служебные метки
-      - action: labeldrop
-        regex: '__.*'
+    pipeline_stages:
+      - docker: {}
+      - labels:
+          job: docker
+          container: ""
+          service: ""
