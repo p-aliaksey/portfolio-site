@@ -93,6 +93,16 @@
       debug:
         msg: "Dashboard files uploaded to /opt/devops-portfolio/infra/monitoring/grafana/dashboards/"
 
+    - name: Restart Promtail to apply new configuration
+      community.docker.docker_container:
+        name: promtail
+        state: restarted
+      ignore_errors: true
+
+    - name: Wait for Promtail to start
+      pause:
+        seconds: 10
+
 - name: Login to GHCR (optional)
   community.docker.docker_login:
     registry_url: ghcr.io
