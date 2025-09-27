@@ -13,12 +13,8 @@ def create_app() -> Flask:
 
     request_counter = Counter("http_requests_total", "HTTP requests total", ["path"]) 
     app_uptime_seconds = Gauge("app_uptime_seconds", "Application uptime in seconds")
-    
-    # Дополнительные метрики
     active_connections = Gauge("app_active_connections", "Number of active connections")
     response_time = Gauge("app_response_time_seconds", "Response time in seconds", ["path"])
-    
-    # Время запуска приложения
     start_time = time.time()
 
     @app.before_request
@@ -47,7 +43,6 @@ def create_app() -> Flask:
 
     @app.route("/metrics")
     def metrics():
-        # Do not increment counter here to keep metrics endpoint clean
         return generate_latest(), 200, {"Content-Type": CONTENT_TYPE_LATEST}
 
     @app.route("/query")
