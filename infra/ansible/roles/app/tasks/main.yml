@@ -112,8 +112,8 @@
     cd /opt/devops-portfolio
     docker compose down 2>/dev/null || true
     # Удаляем все контейнеры проекта принудительно
-    docker ps -a --filter "name=devops-portfolio" --format "{{.Names}}" | xargs -r docker rm -f 2>/dev/null || true
-    docker ps -a --filter "name=promtail" --format "{{.Names}}" | xargs -r docker rm -f 2>/dev/null || true
+    docker rm -f $(docker ps -aq --filter "name=devops-portfolio") 2>/dev/null || true
+    docker rm -f $(docker ps -aq --filter "name=promtail") 2>/dev/null || true
   ignore_errors: true
 
 - name: Build and start containers
