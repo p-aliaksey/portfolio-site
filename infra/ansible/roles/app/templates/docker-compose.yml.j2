@@ -55,10 +55,10 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
+    ports:
+      - "3001:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD={{ grafana_admin_password | default('admin') }}
-      - GF_SERVER_ROOT_URL=https://{{ domain_name | default('pishchik-dev.tech') }}/grafana/
-      - GF_SERVER_SERVE_FROM_SUB_PATH=true
       - GF_ANALYTICS_REPORTING_ENABLED=false
       - GF_ANALYTICS_CHECK_FOR_UPDATES=false
     volumes:
