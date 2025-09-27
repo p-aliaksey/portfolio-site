@@ -14,7 +14,8 @@ ghcr_username: "{{ lookup('env','GHCR_USERNAME') | default(omit, true) }}"
 ghcr_token: "{{ lookup('env','GHCR_TOKEN') | default(omit, true) }}"
 
 # HTTPS Configuration
-enable_https: false
+enable_https: true
+ssl_email: admin@pishchik-dev.tech
 
 # Service Ports
 service_ports:

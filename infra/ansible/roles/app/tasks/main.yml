@@ -334,13 +334,22 @@
       - /opt/devops-portfolio/infra/backup/backup-status.sh
       - crontab -l
 
+- name: Create webroot directory
+  file:
+    path: /opt/devops-portfolio/infra/nginx/webroot
+    state: directory
+    mode: '0755'
+
 - name: Create ACME health file in webroot
-  command: docker exec nginx sh -c 'mkdir -p /var/www/certbot/.well-known/acme-challenge && echo ok > /var/www/certbot/.well-known/acme-challenge/health'
+  copy:
+    content: "ok"
+    dest: /opt/devops-portfolio/infra/nginx/webroot/.well-known/acme-challenge/health
+    mode: '0644'
   when: enable_https | default(false) | bool
 
 - name: Verify ACME health over domain
   uri:
-    url: "http://{{ domain_name }}/.well-known/acme-challenge/health"
+    url: "http://{{ domain_name | default('pishchik-dev.tech') }}/.well-known/acme-challenge/health"
     return_content: true
     status_code: 200
   register: acme_health
