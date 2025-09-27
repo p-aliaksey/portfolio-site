@@ -80,12 +80,9 @@
             
             <!-- Секция бэкапов -->
             <div class="card" style="margin-top: 32px">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="margin-bottom: 20px;">
                     <h3>💾 Статистика бэкапов</h3>
-                    <button id="create-backup-btn" class="backup-button" onclick="createBackup()">
-                        <span id="backup-btn-text">🔄 Создать резервную копию</span>
-                        <span id="backup-btn-loading" style="display: none;">⏳ Создание...</span>
-                    </button>
+                    <p style="color: #666; margin-top: 8px;">Автоматические бэкапы создаются ежедневно в 2:00</p>
                 </div>
                 <div id="backup-info">
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
@@ -622,112 +619,10 @@
         // Обновляем каждые 30 секунд
         setInterval(loadSystemInfo, 30000);
         
-        // Функция создания резервной копии
-        async function createBackup() {
-            const button = document.getElementById('create-backup-btn');
-            const buttonText = document.getElementById('backup-btn-text');
-            const buttonLoading = document.getElementById('backup-btn-loading');
-            const modal = document.getElementById('backup-modal');
-            const output = document.getElementById('backup-output');
-            const result = document.getElementById('backup-result');
-            const progress = document.getElementById('backup-progress');
-            
-            // Блокируем кнопку и показываем загрузку
-            button.disabled = true;
-            buttonText.style.display = 'none';
-            buttonLoading.style.display = 'inline';
-            
-            // Показываем модальное окно
-            modal.style.display = 'block';
-            output.style.display = 'none';
-            progress.style.display = 'block';
-            result.innerHTML = '';
-            
-            try {
-                const response = await fetch('/api/system/backups/create', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
-                
-                // Проверяем статус ответа
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                // Проверяем Content-Type
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error(`Ожидался JSON, получен: ${contentType}. Ответ: ${text.substring(0, 200)}...`);
-                }
-                
-                const data = await response.json();
-                
-                // Скрываем прогресс
-                progress.style.display = 'none';
-                output.style.display = 'block';
-                
-                // Показываем вывод скрипта
-                output.textContent = data.output || data.error || 'Нет вывода';
-                
-                // Показываем результат
-                if (data.success) {
-                    result.innerHTML = `<div class="backup-success">✅ ${data.message}</div>`;
-                    // Обновляем статистику бэкапов
-                    setTimeout(() => {
-                        loadBackupInfo();
-                    }, 1000);
-                } else {
-                    result.innerHTML = `<div class="backup-error">❌ ${data.message}</div>`;
-                }
-                
-            } catch (error) {
-                progress.style.display = 'none';
-                output.style.display = 'block';
-                output.textContent = `Ошибка сети: ${error.message}`;
-                result.innerHTML = `<div class="backup-error">❌ Ошибка при создании резервной копии</div>`;
-            } finally {
-                // Разблокируем кнопку
-                button.disabled = false;
-                buttonText.style.display = 'inline';
-                buttonLoading.style.display = 'none';
-            }
-        }
-        
-        // Функция закрытия модального окна
-        function closeBackupModal() {
-            const modal = document.getElementById('backup-modal');
-            modal.style.display = 'none';
-        }
-        
-        // Закрытие модального окна по клику вне его
-        window.onclick = function(event) {
-            const modal = document.getElementById('backup-modal');
-            if (event.target === modal) {
-                closeBackupModal();
-            }
-        }
+        // Функция создания резервной копии удалена - используем только автоматические бэкапы
     </script>
     
-    <!-- Модальное окно для создания бэкапа -->
-    <div id="backup-modal" class="backup-modal">
-        <div class="backup-modal-content">
-            <div class="backup-modal-header">
-                <h3>🔄 Создание резервной копии</h3>
-                <span class="backup-modal-close" onclick="closeBackupModal()">&times;</span>
-            </div>
-            <div id="backup-modal-body">
-                <p>Создание резервной копии может занять несколько минут...</p>
-                <div id="backup-progress" style="text-align: center; margin: 20px 0;">
-                    <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #28a745; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                </div>
-                <div id="backup-output" class="backup-output" style="display: none;"></div>
-                <div id="backup-result" style="margin-top: 15px;"></div>
-            </div>
-        </div>
-    </div>
+    <!-- Модальное окно для создания бэкапа удалено - используем только автоматические бэкапы -->
 
     <footer>
         <p>© 2025 DevOps Portfolio</p>
