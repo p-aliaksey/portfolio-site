@@ -140,7 +140,12 @@ def create_app() -> Flask:
                 if backup_files:
                     # Размер всех бэкапов
                     total_size = sum(os.path.getsize(f) for f in backup_files)
-                    backup_stats["total_size"] = f"{total_size / (1024*1024):.1f} MB"
+                    if total_size < 1024:
+                        backup_stats["total_size"] = f"{total_size} B"
+                    elif total_size < 1024*1024:
+                        backup_stats["total_size"] = f"{total_size / 1024:.1f} KB"
+                    else:
+                        backup_stats["total_size"] = f"{total_size / (1024*1024):.1f} MB"
                     
                     # Последний бэкап
                     last_backup = backup_files[0]
@@ -167,9 +172,17 @@ def create_app() -> Flask:
                         else:
                             age_text = f"{age_days} дн. назад"
                         
+                        # Правильное вычисление размера
+                        if file_size < 1024:
+                            size_text = f"{file_size} B"
+                        elif file_size < 1024*1024:
+                            size_text = f"{file_size / 1024:.1f} KB"
+                        else:
+                            size_text = f"{file_size / (1024*1024):.1f} MB"
+                        
                         backup_stats["backups"].append({
                             "filename": os.path.basename(backup_file),
-                            "size": f"{file_size / (1024*1024):.1f} MB",
+                            "size": size_text,
                             "date": file_time.strftime("%Y-%m-%d %H:%M:%S"),
                             "age": age_text,
                             "path": backup_file
@@ -199,7 +212,8 @@ def create_app() -> Flask:
                     '/var/spool/cron/crontabs/ubuntu',
                     '/var/spool/cron/crontabs/root',
                     '/var/spool/cron/ubuntu',
-                    '/var/spool/cron/root'
+                    '/var/spool/cron/root',
+                    '/var/spool/cron/crontabs/root'
                 ]
                 
                 for cron_file in cron_files:
@@ -231,6 +245,15 @@ def create_app() -> Flask:
                     except:
                         pass
                 
+                # Проверяем через переменные окружения (для Docker)
+                if not cron_found:
+                    try:
+                        # Проверяем есть ли переменная CRON_ENABLED
+                        if os.environ.get('CRON_ENABLED') == 'true':
+                            cron_found = True
+                    except:
+                        pass
+                
                 # Проверяем наличие cron задач через crontab -l для root (без sudo в контейнере)
                 if not cron_found:
                     try:
@@ -239,6 +262,15 @@ def create_app() -> Flask:
                             cron_found = True
                     except:
                         pass
+                
+                # Принудительная проверка - если есть бэкапы, считаем что cron работает
+                if not cron_found and backup_stats["total_backups"] > 0:
+                    # Проверяем есть ли бэкапы за последние 25 часов (автоматические)
+                    if backup_files:
+                        last_backup_time = datetime.fromtimestamp(os.path.getmtime(backup_files[0]))
+                        hours_since_backup = (datetime.now() - last_backup_time).total_seconds() / 3600
+                        if hours_since_backup < 25:  # Бэкап был в последние 25 часов
+                            cron_found = True
                 
                 if cron_found:
                     backup_stats["cron_status"] = "Active"
