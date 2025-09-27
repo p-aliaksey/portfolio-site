@@ -18,17 +18,19 @@ scrape_configs:
       - source_labels: ['__meta_docker_container_state']
         regex: running
         action: keep
-      # Обязательный job для всех контейнеров
-      - target_label: job
-        replacement: docker
-      # Имя контейнера
+      # ИСКЛЮЧАЕМ сам Promtail из сбора логов
+      - source_labels: ['__meta_docker_container_name']
+        regex: promtail
+        action: drop
+      # Обязательные лейблы для Loki
       - source_labels: ['__meta_docker_container_name']
         target_label: container
         regex: '/(.*)'
         replacement: '${1}'
-      # Service из compose
       - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
         target_label: service
-      # Убираем служебные метки (но оставляем job, container, service)
+      - target_label: job
+        replacement: docker
+      # Убираем служебные метки
       - action: labeldrop
         regex: '__meta.*'
