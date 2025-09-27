@@ -57,6 +57,7 @@
         owner: 472
         group: 472
         force: true
+        backup: true
 
     - name: Set correct permissions for Grafana dashboards
       file:
@@ -65,6 +66,58 @@
         owner: 472
         group: 472
         recurse: true
+
+    - name: Ensure all dashboard files have correct permissions
+      file:
+        path: "{{ item }}"
+        mode: '0644'
+        owner: 472
+        group: 472
+      loop: "{{ ansible_facts.find_files(paths=['/opt/devops-portfolio/infra/monitoring/grafana/dashboards'], patterns=['*.json']) }}"
+      ignore_errors: true
+
+    - name: Wait for Grafana to be ready
+      uri:
+        url: "http://localhost:3001/api/health"
+        method: GET
+        status_code: 200
+      retries: 10
+      delay: 5
+      ignore_errors: true
+
+    - name: Load dashboards via API
+      uri:
+        url: "http://localhost:3001/api/dashboards/db"
+        method: POST
+        body_format: json
+        body: "{{ lookup('file', item) | from_json }}"
+        user: admin
+        password: "{{ grafana_admin_password | default('admin') }}"
+        status_code: [200, 400, 409]
+      loop: "{{ ansible_facts.find_files(paths=['/opt/devops-portfolio/infra/monitoring/grafana/dashboards'], patterns=['*.json']) }}"
+      ignore_errors: true
+
+    - name: Wait for dashboards to load
+      pause:
+        seconds: 10
+
+    - name: Test Grafana dashboards API
+      uri:
+        url: "http://localhost:3001/api/search?type=dash-db"
+        method: GET
+        return_content: true
+        user: admin
+        password: "{{ grafana_admin_password | default('admin') }}"
+      register: grafana_dashboards_test
+      ignore_errors: true
+
+    - name: Check if dashboards are loaded
+      set_fact:
+        dashboard_count: "{{ grafana_dashboards_test.json | length | default(0) }}"
+
+    - name: Display dashboard count
+      debug:
+        msg: "Loaded {{ dashboard_count }} dashboards in Grafana"
 
 - name: Login to GHCR (optional)
   community.docker.docker_login:
