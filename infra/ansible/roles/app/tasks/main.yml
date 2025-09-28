@@ -446,7 +446,7 @@
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
       - /opt/devops-portfolio/infra/nginx/webroot:/var/www/certbot
-    command: certonly --webroot --webroot-path=/var/www/certbot --email {{ ssl_email | default('admin@pishchik-dev.tech') }} --agree-tos --no-eff-email -d {{ domain_name | default('pishchik-dev.tech') }} -d www.{{ domain_name | default('pishchik-dev.tech') }}
+    command: certonly --webroot --webroot-path=/var/www/certbot --email {{ ssl_email | default('admin@pishchik-dev.tech') }} --agree-tos --no-eff-email --non-interactive --force-renewal -d {{ domain_name | default('pishchik-dev.tech') }} -d www.{{ domain_name | default('pishchik-dev.tech') }}
     state: started
   when: enable_https | default(false) | bool and not ssl_cert_exists.stat.exists
 
