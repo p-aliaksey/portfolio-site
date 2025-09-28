@@ -450,17 +450,40 @@
     state: started
   when: enable_https | default(false) | bool and not ssl_cert_exists.stat.exists
 
+- name: Check SSL certificates after obtaining
+  stat:
+    path: /etc/letsencrypt/live/{{ domain_name | default('pishchik-dev.tech') }}/fullchain.pem
+  register: ssl_cert_after
+  when: enable_https | default(false) | bool and not ssl_cert_exists.stat.exists
+
+- name: Display SSL certificate status after obtaining
+  debug:
+    msg: "SSL certificates obtained: {{ ssl_cert_after.stat.exists | default(false) }}"
+  when: enable_https | default(false) | bool and not ssl_cert_exists.stat.exists
+
 - name: Display SSL certificate status
   debug:
     msg: "SSL certificates exist: {{ ssl_cert_exists.stat.exists | default(false) }}"
   when: enable_https | default(false) | bool
 
-- name: Upload Nginx config (HTTP fallback)
+- name: Set final SSL certificate status
+  set_fact:
+    ssl_cert_final: "{{ ssl_cert_exists.stat.exists | default(false) or ssl_cert_after.stat.exists | default(false) }}"
+  when: enable_https | default(false) | bool
+
+- name: Upload Nginx config (HTTPS if certificates exist)
+  copy:
+    src: ../../../../infra/nginx/nginx-https.conf
+    dest: /opt/devops-portfolio/infra/nginx/nginx-http.conf
+    mode: '0644'
+  when: enable_https | default(false) | bool and ssl_cert_final
+
+- name: Upload Nginx config (HTTP fallback if no certificates)
   copy:
     src: ../../../../infra/nginx/nginx-http-fallback.conf
     dest: /opt/devops-portfolio/infra/nginx/nginx-http.conf
     mode: '0644'
-  when: enable_https | default(false) | bool
+  when: enable_https | default(false) | bool and not ssl_cert_final
 
 - name: Stop temporary HTTP stack
   community.docker.docker_compose_v2:
