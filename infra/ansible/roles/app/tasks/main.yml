@@ -382,6 +382,18 @@
     state: present
   when: enable_https | default(false) | bool
 
+- name: Reload Nginx with temporary config
+  community.docker.docker_container:
+    name: nginx
+    state: stopped
+  when: enable_https | default(false) | bool
+
+- name: Start Nginx with temporary config
+  community.docker.docker_container:
+    name: nginx
+    state: started
+  when: enable_https | default(false) | bool
+
 - name: Wait for HTTP stack to be ready
   wait_for:
     host: 127.0.0.1
