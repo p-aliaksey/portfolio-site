@@ -47,7 +47,7 @@ def create_app() -> Flask:
 
     @app.route("/query")
     def query_redirect():
-        return redirect("/prometheus/", code=302)
+        return redirect("https://pishchik-dev.tech/prometheus/", code=302)
 
     @app.route("/loki")
     def loki():
