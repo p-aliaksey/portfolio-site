@@ -61,6 +61,10 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD={{ grafana_admin_password | default('admin') }}
       - GF_ANALYTICS_REPORTING_ENABLED=false
       - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      - GF_SERVER_ROOT_URL=https://{{ domain_name | default('pishchik-dev.tech') }}/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SERVER_DOMAIN={{ domain_name | default('pishchik-dev.tech') }}
+      - GF_SERVER_ENABLE_GZIP=true
     volumes:
       - grafana-data:/var/lib/grafana
       - ./infra/monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro

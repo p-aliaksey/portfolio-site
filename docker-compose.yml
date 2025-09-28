@@ -59,6 +59,8 @@ services:
       - GF_ANALYTICS_CHECK_FOR_UPDATES=false
       - GF_SERVER_ROOT_URL=https://pishchik-dev.tech/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SERVER_DOMAIN=pishchik-dev.tech
+      - GF_SERVER_ENABLE_GZIP=true
     volumes:
       - grafana-data:/var/lib/grafana
       - ./infra/monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
