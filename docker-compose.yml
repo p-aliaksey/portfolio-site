@@ -3,6 +3,8 @@ services:
     build: .
     image: devops-portfolio:local
     container_name: app
+    ports:
+      - "8000:8000"
     environment:
       - PORT=8000
     volumes:
