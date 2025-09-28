@@ -534,3 +534,22 @@
     name: nginx
     state: started
   when: enable_https | default(false) | bool and ssl_cert_final
+
+- name: Force update Nginx config to HTTPS
+  copy:
+    src: ../../../../infra/nginx/nginx-https.conf
+    dest: /opt/devops-portfolio/infra/nginx/nginx-http.conf
+    mode: '0644'
+  when: enable_https | default(false) | bool
+
+- name: Restart Nginx with HTTPS config
+  community.docker.docker_container:
+    name: nginx
+    state: stopped
+  when: enable_https | default(false) | bool
+
+- name: Start Nginx with final HTTPS config
+  community.docker.docker_container:
+    name: nginx
+    state: started
+  when: enable_https | default(false) | bool
