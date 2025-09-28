@@ -433,6 +433,12 @@
     source: pull
   when: enable_https | default(false) | bool
 
+- name: Check if SSL certificates exist
+  stat:
+    path: /etc/letsencrypt/live/{{ domain_name | default('pishchik-dev.tech') }}/fullchain.pem
+  register: ssl_cert_exists
+  when: enable_https | default(false) | bool
+
 - name: Obtain SSL certificates
   community.docker.docker_container:
     name: certbot-ssl
@@ -442,11 +448,16 @@
       - /opt/devops-portfolio/infra/nginx/webroot:/var/www/certbot
     command: certonly --webroot --webroot-path=/var/www/certbot --email {{ ssl_email | default('admin@pishchik-dev.tech') }} --agree-tos --no-eff-email -d {{ domain_name | default('pishchik-dev.tech') }} -d www.{{ domain_name | default('pishchik-dev.tech') }}
     state: started
+  when: enable_https | default(false) | bool and not ssl_cert_exists.stat.exists
+
+- name: Display SSL certificate status
+  debug:
+    msg: "SSL certificates exist: {{ ssl_cert_exists.stat.exists | default(false) }}"
   when: enable_https | default(false) | bool
 
-- name: Upload Nginx config (HTTPS)
+- name: Upload Nginx config (HTTP fallback)
   copy:
-    src: ../../../../infra/nginx/nginx-https.conf
+    src: ../../../../infra/nginx/nginx-http-fallback.conf
     dest: /opt/devops-portfolio/infra/nginx/nginx-http.conf
     mode: '0644'
   when: enable_https | default(false) | bool
