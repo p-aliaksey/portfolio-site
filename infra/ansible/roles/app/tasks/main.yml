@@ -471,6 +471,17 @@
     ssl_cert_final: "{{ ssl_cert_exists.stat.exists | default(false) or ssl_cert_after.stat.exists | default(false) }}"
   when: enable_https | default(false) | bool
 
+- name: Force check SSL certificates on server
+  stat:
+    path: /etc/letsencrypt/live/{{ domain_name | default('pishchik-dev.tech') }}/fullchain.pem
+  register: ssl_cert_server_check
+  when: enable_https | default(false) | bool
+
+- name: Update final SSL certificate status from server
+  set_fact:
+    ssl_cert_final: "{{ ssl_cert_server_check.stat.exists | default(false) }}"
+  when: enable_https | default(false) | bool
+
 - name: Upload Nginx config (HTTPS if certificates exist)
   copy:
     src: ../../../../infra/nginx/nginx-https.conf
@@ -511,3 +522,15 @@
     name: nginx
     state: started
   when: enable_https | default(false) | bool
+
+- name: Force reload Nginx with new config
+  community.docker.docker_container:
+    name: nginx
+    state: stopped
+  when: enable_https | default(false) | bool and ssl_cert_final
+
+- name: Start Nginx with HTTPS config
+  community.docker.docker_container:
+    name: nginx
+    state: started
+  when: enable_https | default(false) | bool and ssl_cert_final
