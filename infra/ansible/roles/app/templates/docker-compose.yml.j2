@@ -37,7 +37,7 @@ services:
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
       - ./infra/nginx/webroot:/var/www/certbot
-    command: certonly --webroot --webroot-path=/var/www/certbot --email {{ ssl_email | default('admin@pishchik-dev.tech') }} --agree-tos --no-eff-email -d {{ domain_name | default('pishchik-dev.tech') }} -d www.{{ domain_name | default('pishchik-dev.tech') }}
+    command: certonly --webroot --webroot-path=/var/www/certbot --email {{ letsencrypt_email }} --agree-tos --no-eff-email -d {{ domain }} -d www.{{ domain }}
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus

@@ -6,6 +6,7 @@ app_image: "{{ 'ghcr.io/' ~ (lookup('env','GITHUB_REPOSITORY') | default('owner/
 grafana_admin_password: admin
 
 # Domain Configuration
+domain: pishchik-dev.tech
 domain_name: pishchik-dev.tech
 letsencrypt_email: admin2@1soft.by
 
