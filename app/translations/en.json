@@ -63,7 +63,45 @@
   },
   "monitoring": {
     "title": "System Monitoring",
-    "subtitle": "Container status and system metrics",
+    "subtitle": "Tools for monitoring infrastructure and application status",
+    "grafana": {
+      "title": "📈 Grafana Dashboards",
+      "description": "Main monitoring tool with beautiful dashboards and graphs. Shows application metrics, system resources and service status.",
+      "button": "Open Grafana"
+    },
+    "prometheus": {
+      "title": "📊 Prometheus",
+      "description": "Metrics collection and monitoring system. Collects data on application and infrastructure performance. Useful for debugging and analysis.",
+      "button": "Open Prometheus"
+    },
+    "loki": {
+      "title": "📝 Loki",
+      "description": "Log aggregation system. Centralized collection and analysis of application and service logs. Integrated with Grafana.",
+      "button": "Open Loki"
+    },
+    "system_info": {
+      "title": "🖥️ System Information",
+      "disk_usage": "💾 Disk Usage",
+      "docker_containers": "🐳 Docker Containers",
+      "loading": "Loading...",
+      "error": "Error",
+      "not_found": "Not found",
+      "unknown_error": "Unknown error"
+    },
+    "backups": {
+      "title": "💾 Backup Statistics",
+      "subtitle": "Automatic backups are created daily at 2:00",
+      "general_stats": "📊 General Statistics",
+      "last_backup": "⏰ Last Backup",
+      "automation_status": "🔧 Automation Status",
+      "backup_list": "📋 Backup List",
+      "total_backups": "Total Backups",
+      "total_size": "Total Size",
+      "no_backups": "No Backups",
+      "backups_not_found": "Backups not found",
+      "automatic_backups": "Automatic Backups",
+      "loading_error": "Loading Error"
+    },
     "containers": {
       "title": "Containers",
       "status": "Status",

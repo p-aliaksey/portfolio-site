@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Мониторинг | DevOps Portfolio</title>
+    <title>Monitoring | DevOps Portfolio</title>
     <link rel="stylesheet" href="/static/style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,63 +14,63 @@
         <nav>
             <a class="brand" href="/">DevOps Portfolio</a>
             <div class="links">
-                <a href="/about">О проекте</a>
-                <a href="/metrics">Метрики</a>
-                <a href="/monitoring">Мониторинг</a>
+                <a href="/about">About</a>
+                <a href="/metrics">Metrics</a>
+                <a href="/monitoring">Monitoring</a>
             </div>
         </nav>
     </header>
     
     <main>
         <section class="container" style="padding: 48px 24px">
-            <h1>Система мониторинга</h1>
-            <p class="lead">Инструменты для наблюдения за состоянием инфраструктуры и приложений</p>
+            <h1>System Monitoring</h1>
+            <p class="lead">Tools for monitoring infrastructure and application status</p>
             
             <div class="grid" style="margin-top: 32px">
                 <div class="card">
                     <h3>📈 Grafana Dashboards</h3>
-                    <p><strong>Основной инструмент мониторинга</strong> с красивыми дашбордами и графиками. Показывает метрики приложения, системные ресурсы и статус сервисов.</p>
+                    <p><strong>Main monitoring tool</strong> with beautiful dashboards and graphs. Shows application metrics, system resources and service status.</p>
                     <div style="margin-top: 16px">
-                        <a class="button" href="https://pishchik-dev.tech/grafana/" target="_blank" rel="noopener">Открыть Grafana</a>
+                        <a class="button" href="https://pishchik-dev.tech/grafana/" target="_blank" rel="noopener">Open Grafana</a>
                     </div>
                 </div>
                 
                 <div class="card">
                     <h3>📊 Prometheus</h3>
-                    <p>Система сбора метрик и мониторинга. Собирает данные о производительности приложений и инфраструктуры. Полезен для отладки и анализа.</p>
+                    <p>Metrics collection and monitoring system. Collects data on application and infrastructure performance. Useful for debugging and analysis.</p>
                     <div style="margin-top: 16px">
-                        <a class="button" href="https://pishchik-dev.tech/prometheus/" target="_blank" rel="noopener">Открыть Prometheus</a>
+                        <a class="button" href="https://pishchik-dev.tech/prometheus/" target="_blank" rel="noopener">Open Prometheus</a>
                     </div>
                 </div>
                 
                 <div class="card">
                     <h3>📝 Loki</h3>
-                    <p>Система агрегации логов. Централизованный сбор и анализ логов приложений и сервисов. Интегрирован с Grafana.</p>
+                    <p>Log aggregation system. Centralized collection and analysis of application and service logs. Integrated with Grafana.</p>
                     <div style="margin-top: 16px">
-                        <a class="button" href="/loki/" target="_blank" rel="noopener">Открыть Loki</a>
+                        <a class="button" href="/loki/" target="_blank" rel="noopener">Open Loki</a>
                     </div>
                 </div>
                 
             </div>
             
             <div class="card" style="margin-top: 32px">
-                <h3>🖥️ Системная информация</h3>
+                <h3>🖥️ System Information</h3>
                 <div id="system-info">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 20px;">
                         <div>
-                            <h4>💾 Использование диска</h4>
+                            <h4>💾 Disk Usage</h4>
                             <div id="disk-info">
                                 <div style="background: #f0f0f0; border-radius: 10px; height: 20px; margin: 10px 0; overflow: hidden;">
                                     <div id="disk-bar" style="background: linear-gradient(90deg, #4CAF50, #8BC34A); height: 100%; width: 0%; transition: width 1s ease-in-out; border-radius: 10px;"></div>
                                 </div>
-                                <div id="disk-text">Загрузка...</div>
+                                <div id="disk-text">Loading...</div>
                             </div>
                         </div>
                         <div>
-                            <h4>🐳 Docker контейнеры</h4>
+                            <h4>🐳 Docker Containers</h4>
                             <div id="docker-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
                                 <div style="text-align: center; padding: 10px; background: #f8f9fa; border-radius: 8px; animation: pulse 2s infinite;">
-                                    Загрузка...
+                                    Loading...
                                 </div>
                             </div>
                         </div>
@@ -78,45 +78,45 @@
                 </div>
             </div>
             
-            <!-- Секция бэкапов -->
+            <!-- Backup Section -->
             <div class="card" style="margin-top: 32px">
                 <div style="margin-bottom: 20px;">
-                    <h3>💾 Статистика бэкапов</h3>
-                    <p style="color: #666; margin-top: 8px;">Автоматические бэкапы создаются ежедневно в 2:00</p>
+                    <h3>💾 Backup Statistics</h3>
+                    <p style="color: #666; margin-top: 8px;">Automatic backups are created daily at 2:00</p>
                 </div>
                 <div id="backup-info">
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
                         <div class="backup-stat-card">
-                            <h4>📊 Общая статистика</h4>
+                            <h4>📊 General Statistics</h4>
                             <div id="backup-stats">
                                 <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; animation: pulse 2s infinite;">
-                                    Загрузка...
+                                    Loading...
                                 </div>
                             </div>
                         </div>
                         <div class="backup-stat-card">
-                            <h4>⏰ Последний бэкап</h4>
+                            <h4>⏰ Last Backup</h4>
                             <div id="last-backup">
                                 <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; animation: pulse 2s infinite;">
-                                    Загрузка...
+                                    Loading...
                                 </div>
                             </div>
                         </div>
                         <div class="backup-stat-card">
-                            <h4>🔧 Статус автоматизации</h4>
+                            <h4>🔧 Automation Status</h4>
                             <div id="cron-status">
                                 <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; animation: pulse 2s infinite;">
-                                    Загрузка...
+                                    Loading...
                                 </div>
                             </div>
                         </div>
                     </div>
                     
                     <div>
-                        <h4>📋 Список бэкапов</h4>
+                        <h4>📋 Backup List</h4>
                         <div id="backup-list">
                             <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; animation: pulse 2s infinite;">
-                                Загрузка...
+                                Loading...
                             </div>
                         </div>
                     </div>
@@ -457,9 +457,9 @@
                 }, 100);
                 
                 diskText.innerHTML = `
-                    <p><strong>Использовано:</strong> ${diskData.percent_used}%</p>
-                    <p><strong>Свободно:</strong> ${Math.round(diskData.free / 1024 / 1024 / 1024)} GB</p>
-                    <p><strong>Всего:</strong> ${Math.round(diskData.total / 1024 / 1024 / 1024)} GB</p>
+                    <p><strong>Used:</strong> ${diskData.percent_used}%</p>
+                    <p><strong>Free:</strong> ${Math.round(diskData.free / 1024 / 1024 / 1024)} GB</p>
+                    <p><strong>Total:</strong> ${Math.round(diskData.total / 1024 / 1024 / 1024)} GB</p>
                 `;
                 
                 // Загрузка информации о Docker
@@ -485,10 +485,10 @@
                 } else {
                     dockerInfo.innerHTML = `
                         <div class="container-card stopped">
-                            <div class="container-name">Ошибка</div>
-                            <div class="container-status">Контейнеры не найдены</div>
+                            <div class="container-name">Error</div>
+                            <div class="container-status">Containers not found</div>
                             <div style="font-size: 10px; margin-top: 5px; opacity: 0.7;">
-                                ${dockerData.error || 'Неизвестная ошибка'}
+                                ${dockerData.error || 'Unknown error'}
                             </div>
                         </div>
                     `;
@@ -498,12 +498,12 @@
                 await loadBackupInfo();
                 
             } catch (error) {
-                console.error('Ошибка загрузки системной информации:', error);
-                document.getElementById('disk-text').innerHTML = '<p style="color: red;">Ошибка загрузки</p>';
+                console.error('Error loading system information:', error);
+                document.getElementById('disk-text').innerHTML = '<p style="color: red;">Loading Error</p>';
                 document.getElementById('docker-info').innerHTML = `
                     <div class="container-card stopped">
-                        <div class="container-name">Ошибка</div>
-                        <div class="container-status">Не удалось загрузить данные</div>
+                        <div class="container-name">Error</div>
+                        <div class="container-status">Failed to load data</div>
                     </div>
                 `;
             }
@@ -515,20 +515,20 @@
                 const backupResponse = await fetch('/api/system/backups');
                 const backupData = await backupResponse.json();
                 
-                // Общая статистика
+                // General statistics
                 const backupStats = document.getElementById('backup-stats');
                 backupStats.innerHTML = `
                     <div class="backup-stat-number">${backupData.total_backups}</div>
-                    <div class="backup-stat-label">Всего бэкапов</div>
+                    <div class="backup-stat-label">Total Backups</div>
                     <div style="margin-top: 10px; font-size: 0.9em; color: #6c757d;">
-                        <div>Общий размер: ${backupData.total_size}</div>
+                        <div>Total Size: ${backupData.total_size}</div>
                         <div class="backup-health ${backupData.backup_health.toLowerCase()}">
                             ${backupData.backup_health}
                         </div>
                     </div>
                 `;
                 
-                // Последний бэкап
+                // Last backup
                 const lastBackup = document.getElementById('last-backup');
                 if (backupData.last_backup) {
                     lastBackup.innerHTML = `
@@ -536,28 +536,28 @@
                             ${backupData.last_backup}
                         </div>
                         <div style="font-size: 0.9em; color: #6c757d;">
-                            Последний бэкап
+                            Last Backup
                         </div>
                     `;
                 } else {
                     lastBackup.innerHTML = `
                         <div style="font-size: 1.2em; font-weight: bold; color: #dc3545; margin-bottom: 8px;">
-                            Нет бэкапов
+                            No Backups
                         </div>
                         <div style="font-size: 0.9em; color: #6c757d;">
-                            Бэкапы не найдены
+                            Backups not found
                         </div>
                     `;
                 }
                 
-                // Статус cron
+                // Cron status
                 const cronStatus = document.getElementById('cron-status');
                 cronStatus.innerHTML = `
                     <div class="cron-status ${backupData.cron_status.toLowerCase().replace(' ', '-')}">
                         ${backupData.cron_status}
                     </div>
                     <div style="margin-top: 8px; font-size: 0.9em; color: #6c757d;">
-                        Автоматические бэкапы
+                        Automatic Backups
                     </div>
                 `;
                 
@@ -583,46 +583,46 @@
                     backupList.innerHTML = `
                         <div style="text-align: center; padding: 20px; color: #6c757d;">
                             <div style="font-size: 2em; margin-bottom: 10px;">📁</div>
-                            <div>Бэкапы не найдены</div>
+                            <div>Backups not found</div>
                         </div>
                     `;
                 }
                 
             } catch (error) {
-                console.error('Ошибка загрузки информации о бэкапах:', error);
+                console.error('Error loading backup information:', error);
                 document.getElementById('backup-stats').innerHTML = `
                     <div style="text-align: center; padding: 20px; color: #dc3545;">
-                        Ошибка загрузки
+                        Loading Error
                     </div>
                 `;
                 document.getElementById('last-backup').innerHTML = `
                     <div style="text-align: center; padding: 20px; color: #dc3545;">
-                        Ошибка загрузки
+                        Loading Error
                     </div>
                 `;
                 document.getElementById('cron-status').innerHTML = `
                     <div style="text-align: center; padding: 20px; color: #dc3545;">
-                        Ошибка загрузки
+                        Loading Error
                     </div>
                 `;
                 document.getElementById('backup-list').innerHTML = `
                     <div style="text-align: center; padding: 20px; color: #dc3545;">
-                        Ошибка загрузки
+                        Loading Error
                     </div>
                 `;
             }
         }
         
-        // Загружаем информацию при загрузке страницы
+        // Load information on page load
         document.addEventListener('DOMContentLoaded', loadSystemInfo);
         
-        // Обновляем каждые 30 секунд
+        // Update every 30 seconds
         setInterval(loadSystemInfo, 30000);
         
-        // Функция создания резервной копии удалена - используем только автоматические бэкапы
+        // Backup creation function removed - using only automatic backups
     </script>
     
-    <!-- Модальное окно для создания бэкапа удалено - используем только автоматические бэкапы -->
+    <!-- Backup creation modal removed - using only automatic backups -->
 
     <footer>
         <p>© 2025 DevOps Portfolio</p>
