@@ -29,6 +29,7 @@ services:
       - "logging=promtail"
     depends_on:
       - app
+      - grafana
 
   certbot:
     image: certbot/certbot:latest

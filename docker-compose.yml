@@ -27,6 +27,7 @@ services:
       - ./infra/nginx/webroot:/var/www/certbot:ro
     depends_on:
       - app
+      - grafana
     labels:
       - "logging=promtail"
 
