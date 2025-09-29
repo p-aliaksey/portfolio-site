@@ -40,7 +40,9 @@ class Translations:
         
         # 2. Проверяем сессию
         if 'language' in session:
-            return session['language']
+            lang = session['language']
+            print(f"Language from session: {lang}")
+            return lang
         
         # 3. Проверяем заголовок Accept-Language
         accept_language = request.headers.get('Accept-Language', '')
@@ -78,7 +80,11 @@ class Translations:
     def get_all_translations(self):
         """Возвращает все переводы для текущего языка"""
         lang = self.get_language()
-        return self.translations.get(lang, {})
+        translations = self.translations.get(lang, {})
+        if not translations:
+            print(f"Warning: No translations found for language: {lang}")
+            print(f"Available languages: {list(self.translations.keys())}")
+        return translations
 
 # Глобальный экземпляр
 translations = Translations()

@@ -57,7 +57,13 @@ def create_app() -> Flask:
     @app.route("/monitoring")
     def monitoring():
         request_counter.labels(path="/monitoring").inc()
-        return render_template("monitoring.html", t=translations.get_all_translations(), translations=translations)
+        try:
+            t = translations.get_all_translations()
+            app.logger.info(f"Monitoring page - Language: {translations.get_language()}, Translations keys: {list(t.keys())}")
+            return render_template("monitoring.html", t=t, translations=translations)
+        except Exception as e:
+            app.logger.error(f"Error in monitoring route: {str(e)}")
+            return f"Error: {str(e)}", 500
     
     @app.route("/architecture")
     def architecture():
