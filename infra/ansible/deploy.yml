@@ -2,6 +2,8 @@
 - name: Deploy DevOps Portfolio stack
   hosts: all
   become: true
+  vars:
+    project_root: "{{ playbook_dir }}/../.."
   tasks:
     - name: Create project directory
       file:
@@ -29,7 +31,7 @@
 
     - name: Copy nginx configuration files
       copy:
-        src: "{{ item.src }}"
+        src: "{{ project_root }}/{{ item.src }}"
         dest: "{{ item.dest }}"
         mode: '0644'
       loop:
@@ -38,7 +40,7 @@
 
     - name: Copy monitoring configuration files
       copy:
-        src: "{{ item.src }}"
+        src: "{{ project_root }}/{{ item.src }}"
         dest: "{{ item.dest }}"
         mode: '0644'
       loop:
@@ -49,7 +51,7 @@
 
     - name: Copy logging configuration files
       copy:
-        src: "{{ item.src }}"
+        src: "{{ project_root }}/{{ item.src }}"
         dest: "{{ item.dest }}"
         mode: '0644'
       loop:
@@ -58,7 +60,7 @@
 
     - name: Copy backup scripts
       copy:
-        src: "{{ item.src }}"
+        src: "{{ project_root }}/{{ item.src }}"
         dest: "{{ item.dest }}"
         mode: '0755'
       loop:
@@ -69,7 +71,7 @@
 
     - name: Copy docker-compose.yml
       copy:
-        src: docker-compose.yml
+        src: "{{ project_root }}/docker-compose.yml"
         dest: /opt/devops-portfolio/docker-compose.yml
         mode: '0644'
 
