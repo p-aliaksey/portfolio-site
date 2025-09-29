@@ -33,8 +33,8 @@
         dest: "{{ item.dest }}"
         mode: '0644'
       loop:
-        - { src: "../../nginx/nginx.conf", dest: "/opt/devops-portfolio/infra/nginx/nginx.conf" }
-        - { src: "../../nginx/nginx-http.conf", dest: "/opt/devops-portfolio/infra/nginx/nginx-http.conf" }
+        - { src: "infra/nginx/nginx.conf", dest: "/opt/devops-portfolio/infra/nginx/nginx.conf" }
+        - { src: "infra/nginx/nginx-http.conf", dest: "/opt/devops-portfolio/infra/nginx/nginx-http.conf" }
 
     - name: Copy monitoring configuration files
       copy:
@@ -42,10 +42,10 @@
         dest: "{{ item.dest }}"
         mode: '0644'
       loop:
-        - { src: "../../monitoring/prometheus/prometheus.yml", dest: "/opt/devops-portfolio/infra/monitoring/prometheus/prometheus.yml" }
-        - { src: "../../monitoring/grafana/grafana.ini", dest: "/opt/devops-portfolio/infra/monitoring/grafana/grafana.ini" }
-        - { src: "../../monitoring/grafana/datasources.yml", dest: "/opt/devops-portfolio/infra/monitoring/grafana/datasources.yml" }
-        - { src: "../../monitoring/grafana/dashboards.yml", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards.yml" }
+        - { src: "infra/monitoring/prometheus/prometheus.yml", dest: "/opt/devops-portfolio/infra/monitoring/prometheus/prometheus.yml" }
+        - { src: "infra/monitoring/grafana/grafana.ini", dest: "/opt/devops-portfolio/infra/monitoring/grafana/grafana.ini" }
+        - { src: "infra/monitoring/grafana/datasources.yml", dest: "/opt/devops-portfolio/infra/monitoring/grafana/datasources.yml" }
+        - { src: "infra/monitoring/grafana/dashboards.yml", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards.yml" }
 
     - name: Copy logging configuration files
       copy:
@@ -53,8 +53,8 @@
         dest: "{{ item.dest }}"
         mode: '0644'
       loop:
-        - { src: "../../logging/loki/loki-config.yml", dest: "/opt/devops-portfolio/infra/logging/loki/loki-config.yml" }
-        - { src: "../../logging/promtail/promtail-config.yml", dest: "/opt/devops-portfolio/infra/logging/promtail/promtail-config.yml" }
+        - { src: "infra/logging/loki/loki-config.yml", dest: "/opt/devops-portfolio/infra/logging/loki/loki-config.yml" }
+        - { src: "infra/logging/promtail/promtail-config.yml", dest: "/opt/devops-portfolio/infra/logging/promtail/promtail-config.yml" }
 
     - name: Copy backup scripts
       copy:
@@ -62,14 +62,14 @@
         dest: "{{ item.dest }}"
         mode: '0755'
       loop:
-        - { src: "../../backup/backup.sh", dest: "/opt/devops-portfolio/infra/backup/backup.sh" }
-        - { src: "../../backup/restore.sh", dest: "/opt/devops-portfolio/infra/backup/restore.sh" }
-        - { src: "../../backup/setup-cron.sh", dest: "/opt/devops-portfolio/infra/backup/setup-cron.sh" }
-        - { src: "../../backup/backup-status.sh", dest: "/opt/devops-portfolio/infra/backup/backup-status.sh" }
+        - { src: "infra/backup/backup.sh", dest: "/opt/devops-portfolio/infra/backup/backup.sh" }
+        - { src: "infra/backup/restore.sh", dest: "/opt/devops-portfolio/infra/backup/restore.sh" }
+        - { src: "infra/backup/setup-cron.sh", dest: "/opt/devops-portfolio/infra/backup/setup-cron.sh" }
+        - { src: "infra/backup/backup-status.sh", dest: "/opt/devops-portfolio/infra/backup/backup-status.sh" }
 
     - name: Copy docker-compose.yml
       copy:
-        src: ../../docker-compose.yml
+        src: docker-compose.yml
         dest: /opt/devops-portfolio/docker-compose.yml
         mode: '0644'
 
