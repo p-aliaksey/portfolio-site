@@ -137,7 +137,7 @@
   "architecture": {
     "title": "Project Architecture",
     "subtitle": "Infrastructure diagram and DevOps Portfolio components",
-    "diagram_title": "Architecture Diagram",
+    "diagram_title": "Ultra Simple Diagram",
     "components": {
       "web_layer": {
         "title": "Web Layer",

@@ -94,7 +94,7 @@
   "architecture": {
     "title": "Архитектура проекта",
     "subtitle": "Схема инфраструктуры и компонентов DevOps Portfolio",
-    "diagram_title": "Диаграмма архитектуры",
+    "diagram_title": "Максимально простая схема",
     "components": {
       "web_layer": {
         "title": "Web Layer",

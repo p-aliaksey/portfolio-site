@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="{{ translations.get_language() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Архитектура - DevOps Portfolio</title>
+    <title>{{ t.architecture.title }} - DevOps Portfolio</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <style>
@@ -69,11 +69,11 @@
         <div class="nav-container">
             <a href="{{ url_for('index') }}" class="nav-logo">DevOps Portfolio</a>
             <div class="nav-menu">
-                <a href="{{ url_for('index') }}" class="nav-link">Главная</a>
-                <a href="{{ url_for('about') }}" class="nav-link">О проекте</a>
-                <a href="{{ url_for('monitoring') }}" class="nav-link">Мониторинг</a>
-                <a href="{{ url_for('architecture') }}" class="nav-link active">Архитектура</a>
-                <a href="{{ url_for('metrics') }}" class="nav-link">Метрики</a>
+                <a href="{{ url_for('index') }}" class="nav-link">{{ t.nav.home }}</a>
+                <a href="{{ url_for('about') }}" class="nav-link">{{ t.nav.about }}</a>
+                <a href="{{ url_for('monitoring') }}" class="nav-link">{{ t.nav.monitoring }}</a>
+                <a href="{{ url_for('architecture') }}" class="nav-link active">{{ t.nav.architecture }}</a>
+                <a href="{{ url_for('metrics') }}" class="nav-link">{{ t.nav.metrics }}</a>
                 <div class="language-switcher">
                     <a href="/set_language/ru" class="lang-btn {{ 'active' if translations.get_language() == 'ru' else '' }}">RU</a>
                     <a href="/set_language/en" class="lang-btn {{ 'active' if translations.get_language() == 'en' else '' }}">EN</a>
@@ -83,11 +83,11 @@
     </nav>
 
     <div class="architecture-container">
-        <h1>🏗️ Архитектура проекта</h1>
-        <p>Схема инфраструктуры и компонентов DevOps Portfolio</p>
+        <h1>🏗️ {{ t.architecture.title }}</h1>
+        <p>{{ t.architecture.subtitle }}</p>
 
         <div class="architecture-diagram">
-            <h2>🏗️ Максимально простая схема</h2>
+            <h2>🏗️ {{ t.architecture.diagram_title }}</h2>
             <div class="mermaid">
 graph TB
     %% User
