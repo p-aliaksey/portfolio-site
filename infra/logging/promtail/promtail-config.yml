@@ -28,5 +28,20 @@ scrape_configs:
         target_label: service
       - target_label: job
         replacement: docker
+      # Add required labels for Loki
+      - source_labels: ['__meta_docker_container_id']
+        target_label: __path__
+        regex: '(.+)'
+        replacement: '/var/lib/docker/containers/${1}/*.log'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: container_name
+        regex: '/(.*)'
+        replacement: '${1}'
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+        target_label: service_name
+      - target_label: level
+        replacement: info
+      - target_label: environment
+        replacement: production
       - action: labeldrop
         regex: '__meta.*'
