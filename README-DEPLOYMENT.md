@@ -1,112 +1,147 @@
-# DevOps Portfolio - Развертывание
+# 🚀 DevOps Portfolio - Развертывание
 
-## 🚀 Быстрый старт
+Простое и быстрое развертывание современного DevOps проекта с Docker контейнерами.
 
-### 1. Подготовка сервера
+## ⚡ Быстрый старт
+
+### 1. 🏗️ Создание инфраструктуры (Terraform)
+```bash
+# Настройка переменных Yandex Cloud
+cd infra/terraform
+cp terraform.tfvars.example terraform.tfvars
+# Отредактируйте terraform.tfvars
+
+# Создание VM в Yandex Cloud
+terraform init
+terraform plan
+terraform apply
+
+# Получение IP адреса
+terraform output public_ip
+```
+
+### 2. ⚙️ Настройка Ansible
 ```bash
 # Установка Ansible (на локальной машине)
 pip install ansible
 
 # Клонирование репозитория
 git clone <your-repo>
-cd portfolio-site2
+cd devops-portfolio
+
+# Настройка инвентаря
+cd infra/ansible
+# Замените YOUR_VM_IP на полученный IP
+sed -i 's/YOUR_VM_IP/ваш_ip_адрес/' inventory.ini
 ```
 
-### 2. Настройка инвентаря
-Отредактируйте `infra/ansible/inventory.ini`:
-```ini
-[prod]
-your-server-ip ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/your-key.pem
-```
-
-### 3. Развертывание
+### 3. 🚀 Автоматический деплой
 ```bash
-# Полное развертывание
-ansible-playbook -i infra/ansible/inventory.ini infra/ansible/site.yml
+# Полное развертывание (рекомендуется)
+ansible-playbook -i inventory.ini site.yml
 
-# Или только установка Docker
-ansible-playbook -i infra/ansible/inventory.ini infra/ansible/install_docker.yml
-
-# Или только деплой приложения
-ansible-playbook -i infra/ansible/inventory.ini infra/ansible/deploy-simple.yml
+# Или поэтапно:
+ansible-playbook -i inventory.ini install_docker.yml  # Установка Docker
+ansible-playbook -i inventory.ini deploy.yml         # Деплой приложения
 ```
 
 ## 📁 Структура проекта
 
 ```
-├── docker-compose.yml              # Основной compose файл
+devops-portfolio/
+├── docker-compose.yml              # 🐳 Docker Compose (6 контейнеров)
 ├── infra/
-│   ├── nginx/
-│   │   ├── nginx.conf              # HTTPS конфигурация (443)
-│   │   └── nginx-http.conf         # HTTP конфигурация (80)
-│   ├── monitoring/
+│   ├── terraform/                  # ☁️ Yandex Cloud конфигурация
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── terraform.tfvars.example
+│   ├── ansible/                    # ⚙️ Ansible playbooks
+│   │   ├── inventory.ini
+│   │   ├── site.yml
+│   │   └── group_vars/all.yml
+│   ├── nginx/                      # 🌐 Nginx конфигурации
+│   │   ├── nginx.conf              # HTTPS (443)
+│   │   └── nginx-http.conf         # HTTP (80)
+│   ├── monitoring/                 # 📊 Prometheus + Grafana
 │   │   ├── prometheus/
-│   │   │   └── prometheus.yml
 │   │   └── grafana/
-│   │       ├── grafana.ini
-│   │       ├── datasources.yml
-│   │       └── dashboards.yml
-│   ├── logging/
+│   ├── logging/                    # 📝 Loki + Promtail
 │   │   ├── loki/
-│   │   │   └── loki-config.yml
 │   │   └── promtail/
-│   │       └── promtail-config.yml
-│   └── ansible/
-│       ├── inventory.ini
-│       ├── site.yml
-│       ├── install_docker.yml
-│       └── deploy-simple.yml
-└── app/                            # Flask приложение
+│   └── backup/                     # 💾 Скрипты бэкапов
+└── app/                            # 🚀 Flask приложение
+    ├── templates/                  # HTML шаблоны
+    ├── static/                     # CSS, JS, изображения
+    └── translations/               # 🇷🇺🇺🇸 Переводы
 ```
 
 ## 🌐 Доступные сервисы
 
 После развертывания будут доступны:
 
-- **Главная страница**: `https://your-domain.com/`
-- **Grafana**: `https://your-domain.com/grafana/`
-- **Prometheus**: `https://your-domain.com/prometheus/`
-- **Loki**: `https://your-domain.com/loki/`
+- **🏠 Главная страница**: `https://your-domain.com/`
+- **📊 Мониторинг**: `https://your-domain.com/monitoring`
+- **🏗️ Архитектура**: `https://your-domain.com/architecture`
+- **📈 Grafana**: `https://your-domain.com/grafana/`
+- **📊 Prometheus**: `https://your-domain.com/prometheus/`
+- **📝 Loki**: `https://your-domain.com/loki/`
 
-## 🔧 Управление
+## 🔧 Управление контейнерами
 
 ```bash
 # На сервере
 cd /opt/devops-portfolio
 
-# Запуск
+# Запуск всех контейнеров
 docker compose up -d
 
-# Остановка
+# Остановка всех контейнеров
 docker compose down
 
-# Перезапуск
+# Перезапуск всех контейнеров
 docker compose restart
 
-# Логи
+# Перезапуск конкретного контейнера
+docker compose restart nginx
+docker compose restart app
+docker compose restart grafana
+
+# Просмотр логов
 docker compose logs -f
+docker compose logs -f nginx
+docker compose logs -f app
 ```
 
-## 🛠️ Тестирование
+## 🛠️ Тестирование развертывания
 
 ```bash
-# Локальное тестирование
-./test-deployment.sh
-
-# Проверка статуса
+# Проверка статуса всех контейнеров
 docker ps
+
+# Проверка доступности сервисов
 curl -I https://your-domain.com/
 curl -I https://your-domain.com/grafana/
+curl -I https://your-domain.com/prometheus/
+curl -I https://your-domain.com/loki/
+
+# Проверка логов на ошибки
+docker compose logs | grep -i error
 ```
 
-## 📝 Логи
+## 📝 Просмотр логов
 
 ```bash
 # Все сервисы
 docker compose logs
 
-# Конкретный сервис
-docker compose logs grafana
-docker compose logs nginx
-docker compose logs app
+# Конкретные сервисы
+docker compose logs nginx      # Веб-сервер
+docker compose logs app        # Flask приложение
+docker compose logs grafana    # Дашборды
+docker compose logs prometheus # Метрики
+docker compose logs loki       # Логи
+docker compose logs promtail   # Сбор логов
+
+# Логи в реальном времени
+docker compose logs -f nginx
 ```

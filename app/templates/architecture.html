@@ -74,6 +74,10 @@
                 <a href="{{ url_for('monitoring') }}" class="nav-link">Мониторинг</a>
                 <a href="{{ url_for('architecture') }}" class="nav-link active">Архитектура</a>
                 <a href="{{ url_for('metrics') }}" class="nav-link">Метрики</a>
+                <div class="language-switcher">
+                    <a href="/set_language/ru" class="lang-btn {{ 'active' if translations.get_language() == 'ru' else '' }}">RU</a>
+                    <a href="/set_language/en" class="lang-btn {{ 'active' if translations.get_language() == 'en' else '' }}">EN</a>
+                </div>
             </div>
         </div>
     </nav>
@@ -83,148 +87,98 @@
         <p>Схема инфраструктуры и компонентов DevOps Portfolio</p>
 
         <div class="architecture-diagram">
-            <h2>Диаграмма архитектуры</h2>
+            <h2>🏗️ Простая схема архитектуры</h2>
             <div class="mermaid">
 graph TB
-    subgraph "👤 Пользователь"
-        U[Пользователь<br/>Браузер]
+    %% User
+    U[👤 Пользователь<br/>Браузер]
+    
+    %% GitHub
+    GH[🐙 GitHub<br/>Исходный код]
+    GHA[⚙️ GitHub Actions<br/>CI/CD Pipeline]
+    
+    %% Yandex Cloud VM
+    VM[☁️ Yandex Cloud VM<br/>Ubuntu 24.04 LTS<br/>2 CPU, 2GB RAM]
+    
+    %% Docker Containers
+    subgraph "🐳 Docker Containers"
+        N[🌐 Nginx<br/>Reverse Proxy<br/>Port 80/443]
+        A[🚀 Flask App<br/>Portfolio Site<br/>Port 8000]
+        P[📊 Prometheus<br/>Metrics Collection<br/>Port 9090]
+        G[📈 Grafana<br/>Dashboards<br/>Port 3001]
+        L[📝 Loki<br/>Log Storage<br/>Port 3100]
+        PT[📋 Promtail<br/>Log Collector]
     end
     
-    subgraph "🐙 GitHub"
-        GH[GitHub Repository<br/>Исходный код]
-        GHA[GitHub Actions<br/>CI/CD Pipeline]
-    end
+    %% External Services
+    GHCR[📦 GitHub Container Registry<br/>Docker Images]
+    ANS[🔧 Ansible Playbooks<br/>Configuration]
     
-    subgraph "☁️ Yandex Cloud"
-        subgraph "🏗️ Infrastructure (Terraform)"
-            VPC[VPC Network<br/>10.10.0.0/24]
-            SG[Security Groups<br/>Ports: 22,80,443,9090,3001,3100]
-            VM[VM Instance<br/>Ubuntu 24.04 LTS<br/>2 CPU, 2GB RAM]
-        end
-        
-        subgraph "🐳 Docker Environment"
-            subgraph "🌐 Web Layer"
-                N[🌐 Nginx<br/>Port 80/443<br/>Reverse Proxy<br/>SSL Termination]
-            end
-            
-            subgraph "🚀 Application Layer"
-                A[🚀 Flask App<br/>Port 8000<br/>Portfolio Site<br/>i18n Support]
-            end
-            
-            subgraph "📊 Monitoring Layer"
-                P[📊 Prometheus<br/>Port 9090<br/>Metrics Collection<br/>Service Discovery]
-                G[📈 Grafana<br/>Port 3001<br/>Dashboards<br/>Visualization]
-            end
-            
-            subgraph "📝 Logging Layer"
-                L[📝 Loki<br/>Port 3100<br/>Log Aggregation<br/>Storage]
-                PT[📋 Promtail<br/>Log Collection<br/>Docker Logs]
-            end
-            
-            subgraph "💾 Data Layer"
-                GD[(💾 Grafana Data<br/>SQLite Database<br/>Dashboards & Settings)]
-                LD[(💾 Loki Data<br/>File System<br/>Log Storage)]
-                BD[(💾 Backup Data<br/>/opt/backups<br/>Automated Backups)]
-            end
-        end
-    end
+    %% Data Storage
+    DATA[💾 Data Storage<br/>SQLite + Files]
     
-    subgraph "📦 Container Registry"
-        GHCR[GitHub Container Registry<br/>Docker Images<br/>ghcr.io/owner/repo]
-    end
-    
-    subgraph "🔧 Configuration Management"
-        ANS[Ansible Playbooks<br/>Configuration<br/>Deployment]
-    end
-    
-    %% User connections
-    U -->|HTTP/HTTPS| N
-    
-    %% GitHub Actions CI/CD Flow
-    GH -->|Push to main| GHA
-    GHA -->|1. Build Image| GHCR
-    GHA -->|2. Deploy Infrastructure| VPC
-    GHA -->|3. Run Ansible| ANS
-    
-    %% Infrastructure dependencies
-    VPC --> SG
-    SG --> VM
-    VM --> N
-    
-    %% Nginx routing
-    N -->|/| A
+    %% Connections
+    U -->|HTTPS| N
+    N -->|Routes| A
     N -->|/prometheus/| P
     N -->|/grafana/| G
     N -->|/loki/| L
-    N -->|/monitoring/| A
-    N -->|/architecture/| A
     
-    %% Application dependencies
-    A -->|Depends on| N
-    A -->|Exposes metrics| P
+    GH -->|Push| GHA
+    GHA -->|Build & Deploy| GHCR
+    GHA -->|Infrastructure| VM
+    GHA -->|Configure| ANS
     
-    %% Monitoring connections
-    P -->|Scrape metrics| A
-    P -->|Scrape metrics| N
-    P -->|Scrape metrics| P
-    P -->|Scrape metrics| G
-    P -->|Scrape metrics| L
-    P -->|Scrape metrics| PT
-    G -->|Query metrics| P
-    G -->|Query logs| L
+    VM -->|Runs| N
+    VM -->|Runs| A
+    VM -->|Runs| P
+    VM -->|Runs| G
+    VM -->|Runs| L
+    VM -->|Runs| PT
     
-    %% Logging connections
-    PT -->|Collect logs| A
-    PT -->|Collect logs| N
-    PT -->|Collect logs| P
-    PT -->|Collect logs| G
-    PT -->|Collect logs| L
-    PT -->|Send logs| L
+    GHCR -->|Pulls| A
+    GHCR -->|Pulls| N
+    GHCR -->|Pulls| P
+    GHCR -->|Pulls| G
+    GHCR -->|Pulls| L
+    GHCR -->|Pulls| PT
     
-    %% Data storage
-    G -->|Store data| GD
-    L -->|Store logs| LD
-    A -->|Backup data| BD
+    ANS -->|Configures| VM
     
-    %% Container registry
-    GHCR -->|Pull image| A
-    GHCR -->|Pull image| N
-    GHCR -->|Pull image| P
-    GHCR -->|Pull image| G
-    GHCR -->|Pull image| L
-    GHCR -->|Pull image| PT
+    P -->|Scrapes| A
+    P -->|Scrapes| N
+    P -->|Scrapes| G
+    P -->|Scrapes| L
+    P -->|Scrapes| PT
     
-    %% Configuration management
-    ANS -->|Configure| VM
-    ANS -->|Deploy| A
-    ANS -->|Setup| P
-    ANS -->|Setup| G
-    ANS -->|Setup| L
-    ANS -->|Setup| PT
-    ANS -->|Setup| BD
+    G -->|Queries| P
+    G -->|Queries| L
+    
+    PT -->|Collects| A
+    PT -->|Collects| N
+    PT -->|Collects| P
+    PT -->|Collects| G
+    PT -->|Collects| L
+    PT -->|Sends to| L
+    
+    A -->|Stores| DATA
+    G -->|Stores| DATA
+    L -->|Stores| DATA
     
     %% Styling
-    classDef userClass fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef githubClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef infraClass fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef webClass fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef appClass fill:#e3f2fd,stroke:#0277bd,stroke-width:2px
-    classDef monitorClass fill:#fce4ec,stroke:#c2185b,stroke-width:2px
-    classDef logClass fill:#f1f8e9,stroke:#33691e,stroke-width:2px
-    classDef storageClass fill:#fff8e1,stroke:#f57f17,stroke-width:2px
-    classDef registryClass fill:#e0f2f1,stroke:#00695c,stroke-width:2px
-    classDef configClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef userClass fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000
+    classDef githubClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000
+    classDef vmClass fill:#e8f5e8,stroke:#388e3c,stroke-width:3px,color:#000
+    classDef containerClass fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    classDef serviceClass fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000
+    classDef dataClass fill:#f1f8e9,stroke:#689f38,stroke-width:2px,color:#000
     
     class U userClass
     class GH,GHA githubClass
-    class VPC,SG,VM infraClass
-    class N webClass
-    class A appClass
-    class P,G monitorClass
-    class L,PT logClass
-    class GD,LD,BD storageClass
-    class GHCR registryClass
-    class ANS configClass
+    class VM vmClass
+    class N,A containerClass
+    class P,G,L,PT serviceClass
+    class GHCR,ANS,DATA dataClass
             </div>
         </div>
 
@@ -232,138 +186,101 @@ graph TB
             <div class="component-card">
                 <h3>🐙 GitHub & CI/CD</h3>
                 <p><strong>GitHub Repository</strong> - Исходный код проекта</p>
-                <p><strong>GitHub Actions</strong> - CI/CD пайплайн с автоматическим развертыванием</p>
+                <p><strong>GitHub Actions</strong> - Автоматический CI/CD пайплайн</p>
                 <p><strong>GitHub Container Registry</strong> - Хранение Docker образов</p>
-                <div class="port-info">Автоматический деплой при push в main</div>
+                <div class="port-info">🚀 Автоматический деплой при push в main</div>
             </div>
 
             <div class="component-card">
-                <h3>☁️ Yandex Cloud Infrastructure</h3>
+                <h3>☁️ Yandex Cloud VM</h3>
+                <p><strong>Ubuntu 24.04 LTS</strong> - Операционная система</p>
+                <p><strong>2 CPU, 2GB RAM</strong> - Ресурсы виртуальной машины</p>
                 <p><strong>Terraform</strong> - Создание инфраструктуры как код</p>
-                <p><strong>VPC Network</strong> - Виртуальная сеть 10.10.0.0/24</p>
-                <p><strong>Security Groups</strong> - Firewall правила для портов</p>
-                <p><strong>VM Instance</strong> - Ubuntu 24.04 LTS, 2 CPU, 2GB RAM</p>
+                <div class="port-info">🔒 Security Groups для портов 22,80,443,9090,3001,3100</div>
             </div>
 
             <div class="component-card">
-                <h3>🌐 Web Layer</h3>
-                <p><strong>Nginx</strong> - Reverse proxy с SSL терминацией</p>
-                <div class="port-info">Port 80 (HTTP), 443 (HTTPS)</div>
-                <p>Функции: Маршрутизация, SSL, статические файлы</p>
+                <h3>🐳 Docker Контейнеры</h3>
+                <p><strong>🌐 Nginx</strong> - Reverse proxy, SSL терминация (Port 80/443)</p>
+                <p><strong>🚀 Flask App</strong> - Основное приложение портфолио (Port 8000)</p>
+                <p><strong>📊 Prometheus</strong> - Сбор метрик (Port 9090)</p>
+                <p><strong>📈 Grafana</strong> - Дашборды и визуализация (Port 3001)</p>
+                <p><strong>📝 Loki</strong> - Хранение логов (Port 3100)</p>
+                <p><strong>📋 Promtail</strong> - Сбор логов с контейнеров</p>
             </div>
 
             <div class="component-card">
-                <h3>🚀 Application Layer</h3>
-                <p><strong>Flask App</strong> - Основное приложение портфолио</p>
-                <div class="port-info">Port 8000</div>
-                <p>Функции: Веб-интерфейс, API, метрики, i18n поддержка</p>
-            </div>
-
-            <div class="component-card">
-                <h3>📊 Monitoring Layer</h3>
-                <p><strong>Prometheus</strong> - Сбор метрик с service discovery</p>
-                <div class="port-info">Port 9090</div>
-                <p><strong>Grafana</strong> - Дашборды и визуализация</p>
-                <div class="port-info">Port 3001</div>
-                <p>Функции: Мониторинг всех сервисов, алерты</p>
-            </div>
-
-            <div class="component-card">
-                <h3>📝 Logging Layer</h3>
-                <p><strong>Loki</strong> - Централизованное хранение логов</p>
-                <div class="port-info">Port 3100</div>
-                <p><strong>Promtail</strong> - Сбор логов с Docker контейнеров</p>
-                <p>Функции: Агрегация, поиск, анализ логов</p>
-            </div>
-
-            <div class="component-card">
-                <h3>💾 Data Layer</h3>
-                <p><strong>Grafana Data</strong> - SQLite база с дашбордами</p>
-                <p><strong>Loki Data</strong> - Файловая система для логов</p>
-                <p><strong>Backup Data</strong> - Автоматические бэкапы в /opt/backups</p>
-            </div>
-
-            <div class="component-card">
-                <h3>🔧 Configuration Management</h3>
-                <p><strong>Ansible Playbooks</strong> - Конфигурация и деплой</p>
+                <h3>🔧 Ansible Playbooks</h3>
+                <p><strong>Configuration Management</strong> - Автоматическая настройка VM</p>
                 <p><strong>Docker Compose</strong> - Оркестрация контейнеров</p>
-                <p>Функции: Автоматическая настройка, обновления</p>
+                <p><strong>Deployment</strong> - Развертывание приложения</p>
+                <div class="port-info">⚙️ Автоматическая настройка при деплое</div>
+            </div>
+
+            <div class="component-card">
+                <h3>💾 Хранение данных</h3>
+                <p><strong>SQLite Database</strong> - Данные Grafana (дашборды, настройки)</p>
+                <p><strong>File System</strong> - Логи Loki</p>
+                <p><strong>Backup System</strong> - Автоматические бэкапы</p>
+                <div class="port-info">💾 Все данные сохраняются на VM</div>
             </div>
         </div>
 
         <div class="flow-section">
-            <h2>🔄 Потоки данных и процессов</h2>
+            <h2>🔄 Как это работает</h2>
             
             <div class="flow-item">
-                <h3>🚀 CI/CD Pipeline</h3>
-                <p><strong>1. Push в main branch</strong> → GitHub Actions запускается</p>
-                <p><strong>2. Build Stage</strong> → Сборка Docker образа приложения</p>
-                <p><strong>3. Push to Registry</strong> → Публикация образа в GHCR</p>
-                <p><strong>4. Infrastructure</strong> → Terraform создает/обновляет инфраструктуру в Yandex Cloud</p>
-                <p><strong>5. Configuration</strong> → Ansible настраивает VM и деплоит приложение</p>
-                <p><strong>6. Deployment</strong> → Docker Compose запускает все контейнеры</p>
+                <h3>🚀 Автоматический деплой</h3>
+                <p><strong>1. Push в GitHub</strong> → GitHub Actions запускается</p>
+                <p><strong>2. Сборка образа</strong> → Docker образ публикуется в GHCR</p>
+                <p><strong>3. Создание инфраструктуры</strong> → Terraform настраивает Yandex Cloud</p>
+                <p><strong>4. Настройка VM</strong> → Ansible конфигурирует сервер</p>
+                <p><strong>5. Запуск контейнеров</strong> → Docker Compose разворачивает все сервисы</p>
             </div>
 
             <div class="flow-item">
                 <h3>🌐 Пользовательский трафик</h3>
-                <p><strong>HTTP/HTTPS</strong> → Nginx (Port 80/443)</p>
-                <p><strong>Маршрутизация:</strong></p>
+                <p><strong>Пользователь</strong> → <strong>Nginx</strong> (HTTPS) → <strong>Flask App</strong></p>
+                <p><strong>Маршруты:</strong></p>
                 <ul>
-                    <li><code>/</code> → Flask App (Port 8000) - Основной сайт</li>
-                    <li><code>/monitoring</code> → Flask App - Страница мониторинга</li>
-                    <li><code>/architecture</code> → Flask App - Архитектурная схема</li>
-                    <li><code>/prometheus/</code> → Prometheus (Port 9090) - Метрики</li>
-                    <li><code>/grafana/</code> → Grafana (Port 3001) - Дашборды</li>
-                    <li><code>/loki/</code> → Loki (Port 3100) - Логи</li>
+                    <li><code>/</code> → Главная страница</li>
+                    <li><code>/monitoring</code> → Страница мониторинга</li>
+                    <li><code>/architecture</code> → Эта схема</li>
+                    <li><code>/prometheus/</code> → Метрики</li>
+                    <li><code>/grafana/</code> → Дашборды</li>
+                    <li><code>/loki/</code> → Логи</li>
                 </ul>
             </div>
 
             <div class="flow-item">
-                <h3>📊 Мониторинг и метрики</h3>
-                <p><strong>Сбор метрик:</strong> Prometheus → Все сервисы (Flask, Nginx, Prometheus, Grafana, Loki, Promtail)</p>
-                <p><strong>Визуализация:</strong> Grafana → Prometheus (запрос метрик)</p>
-                <p><strong>Service Discovery:</strong> Prometheus автоматически обнаруживает новые сервисы</p>
-                <p><strong>Алерты:</strong> Prometheus → Alertmanager → Уведомления</p>
+                <h3>📊 Мониторинг</h3>
+                <p><strong>Prometheus</strong> собирает метрики со всех контейнеров</p>
+                <p><strong>Grafana</strong> показывает красивые дашборды</p>
+                <p><strong>Promtail</strong> собирает логи и отправляет в <strong>Loki</strong></p>
+                <p><strong>Grafana</strong> может показывать и метрики, и логи</p>
             </div>
 
             <div class="flow-item">
-                <h3>📝 Логирование</h3>
-                <p><strong>Сбор логов:</strong> Promtail → Docker Socket → Все контейнеры</p>
-                <p><strong>Агрегация:</strong> Promtail → Loki (Port 3100)</p>
-                <p><strong>Хранение:</strong> Loki → Файловая система (/var/lib/loki)</p>
-                <p><strong>Поиск:</strong> Grafana → Loki (запрос логов)</p>
-            </div>
-
-            <div class="flow-item">
-                <h3>💾 Хранение данных</h3>
-                <p><strong>Grafana Data:</strong> SQLite база → /var/lib/grafana</p>
-                <p><strong>Loki Data:</strong> Файлы логов → /var/lib/loki</p>
-                <p><strong>Backup Data:</strong> Автоматические бэкапы → /opt/backups</p>
-                <p><strong>Application Data:</strong> Статические файлы → /app/static</p>
-            </div>
-
-            <div class="flow-item">
-                <h3>🔧 Конфигурационное управление</h3>
-                <p><strong>Infrastructure as Code:</strong> Terraform → Yandex Cloud API</p>
-                <p><strong>Configuration Management:</strong> Ansible → VM настройка</p>
-                <p><strong>Container Orchestration:</strong> Docker Compose → Запуск сервисов</p>
-                <p><strong>Secrets Management:</strong> GitHub Secrets → CI/CD переменные</p>
+                <h3>💾 Хранение</h3>
+                <p><strong>SQLite</strong> - настройки Grafana и дашборды</p>
+                <p><strong>Файлы</strong> - логи Loki</p>
+                <p><strong>Автобэкапы</strong> - ежедневно в 2:00</p>
             </div>
         </div>
 
         <div class="flow-section">
             <h2>🔒 Безопасность</h2>
             <div class="flow-item">
-                <strong>Firewall:</strong> Настроен через Yandex Cloud Security Groups
+                <strong>🔒 Firewall:</strong> Yandex Cloud Security Groups (порты 22,80,443,9090,3001,3100)
             </div>
             <div class="flow-item">
-                <strong>HTTPS:</strong> Let's Encrypt сертификаты
+                <strong>🔐 HTTPS:</strong> Let's Encrypt SSL сертификаты
             </div>
             <div class="flow-item">
-                <strong>Изоляция:</strong> Docker контейнеры в отдельной сети
+                <strong>🐳 Изоляция:</strong> Docker контейнеры в отдельной сети
             </div>
             <div class="flow-item">
-                <strong>Доступ:</strong> SSH ключи для административного доступа
+                <strong>🔑 SSH:</strong> Доступ только по ключам
             </div>
         </div>
     </div>

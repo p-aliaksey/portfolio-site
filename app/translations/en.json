@@ -86,7 +86,12 @@
       "loading": "Loading...",
       "error": "Error",
       "not_found": "Not found",
-      "unknown_error": "Unknown error"
+      "unknown_error": "Unknown error",
+      "used": "Used",
+      "free": "Free",
+      "total": "Total",
+      "containers_not_found": "Containers not found",
+      "failed_to_load": "Failed to load data"
     },
     "backups": {
       "title": "💾 Backup Statistics",
