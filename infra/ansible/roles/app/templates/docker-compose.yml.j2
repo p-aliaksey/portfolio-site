@@ -66,8 +66,12 @@ services:
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
       - GF_SERVER_DOMAIN={{ domain }}
       - GF_SERVER_ENABLE_GZIP=true
+      - GF_SERVER_CERT_FILE=
+      - GF_SERVER_CERT_KEY=
+      - GF_SERVER_PROTOCOL=http
     volumes:
       - grafana-data:/var/lib/grafana
+      - ./infra/monitoring/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
       - ./infra/monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
       - ./infra/monitoring/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards.yml:ro
       - ./infra/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro

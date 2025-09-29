@@ -67,6 +67,14 @@
         group: 472
         recurse: true
 
+    - name: Upload Grafana configuration
+      copy:
+        src: ../../../../infra/monitoring/grafana/grafana.ini
+        dest: /opt/devops-portfolio/infra/monitoring/grafana/grafana.ini
+        mode: '0644'
+        owner: 472
+        group: 472
+
     - name: Ensure all dashboard files have correct permissions
       file:
         path: "{{ item }}"
