@@ -66,8 +66,12 @@ def create_app() -> Flask:
     
     @app.route("/set_language/<lang>")
     def set_language(lang):
-        translations.set_language(lang)
-        return redirect(request.referrer or url_for('index'))
+        try:
+            translations.set_language(lang)
+            return redirect(request.referrer or url_for('index'))
+        except Exception as e:
+            app.logger.error(f"Error setting language {lang}: {str(e)}")
+            return redirect(request.referrer or url_for('index'))
     
     @app.route("/api/system/disk")
     def system_disk():

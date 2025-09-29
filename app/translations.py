@@ -19,9 +19,16 @@ class Translations:
         
         for lang in ['ru', 'en']:
             file_path = os.path.join(translations_dir, f'{lang}.json')
-            if os.path.exists(file_path):
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    translations[lang] = json.load(f)
+            try:
+                if os.path.exists(file_path):
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        translations[lang] = json.load(f)
+                else:
+                    print(f"Warning: Translation file {file_path} not found")
+                    translations[lang] = {}
+            except Exception as e:
+                print(f"Error loading translation file {file_path}: {str(e)}")
+                translations[lang] = {}
         
         return translations
     
@@ -45,8 +52,14 @@ class Translations:
     
     def set_language(self, lang):
         """Устанавливает язык в сессии"""
-        if lang in self.translations:
-            session['language'] = lang
+        try:
+            if lang in self.translations:
+                session['language'] = lang
+                return True
+            return False
+        except Exception as e:
+            print(f"Error setting language {lang}: {str(e)}")
+            return False
     
     def translate(self, key, **kwargs):
         """Переводит ключ на текущий язык"""
