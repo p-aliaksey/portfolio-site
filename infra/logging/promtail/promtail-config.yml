@@ -20,28 +20,22 @@ scrape_configs:
       - source_labels: ['__meta_docker_container_name']
         regex: '.*/?promtail'
         action: drop
-      - source_labels: ['__meta_docker_container_name']
-        target_label: container
-        regex: '/(.*)'
-        replacement: '${1}'
-      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
-        target_label: service
-      - target_label: job
-        replacement: docker
-      # Add required labels for Loki
-      - source_labels: ['__meta_docker_container_id']
-        target_label: __path__
-        regex: '(.+)'
-        replacement: '/var/lib/docker/containers/${1}/*.log'
+      # Add required labels for Loki - simplified approach
       - source_labels: ['__meta_docker_container_name']
         target_label: container_name
         regex: '/(.*)'
         replacement: '${1}'
       - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
         target_label: service_name
+      - target_label: job
+        replacement: docker
       - target_label: level
         replacement: info
       - target_label: environment
         replacement: production
+      - source_labels: ['__meta_docker_container_id']
+        target_label: __path__
+        regex: '(.+)'
+        replacement: '/var/lib/docker/containers/${1}/*.log'
       - action: labeldrop
         regex: '__meta.*'
