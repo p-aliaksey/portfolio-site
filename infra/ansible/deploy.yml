@@ -10,10 +10,10 @@
         mode: '0755'
 
     - name: Copy project files
-      synchronize:
+      copy:
         src: ./infra
         dest: /opt/devops-portfolio/infra
-        recursive: true
+        mode: '0755'
 
     - name: Copy docker-compose.yml
       copy:

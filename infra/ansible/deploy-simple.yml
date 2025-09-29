@@ -1,0 +1,125 @@
+---
+- name: Deploy DevOps Portfolio stack (Simple version)
+  hosts: all
+  become: true
+  tasks:
+    - name: Create project directory
+      file:
+        path: /opt/devops-portfolio
+        state: directory
+        mode: '0755'
+
+    - name: Create infra directory structure
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /opt/devops-portfolio/infra
+        - /opt/devops-portfolio/infra/nginx
+        - /opt/devops-portfolio/infra/nginx/webroot
+        - /opt/devops-portfolio/infra/monitoring
+        - /opt/devops-portfolio/infra/monitoring/prometheus
+        - /opt/devops-portfolio/infra/monitoring/grafana
+        - /opt/devops-portfolio/infra/monitoring/grafana/dashboards
+        - /opt/devops-portfolio/infra/logging
+        - /opt/devops-portfolio/infra/logging/loki
+        - /opt/devops-portfolio/infra/logging/promtail
+        - /opt/devops-portfolio/infra/backup
+
+    - name: Copy nginx configuration files
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: '0644'
+      loop:
+        - { src: "infra/nginx/nginx.conf", dest: "/opt/devops-portfolio/infra/nginx/nginx.conf" }
+        - { src: "infra/nginx/nginx-http.conf", dest: "/opt/devops-portfolio/infra/nginx/nginx-http.conf" }
+
+    - name: Copy monitoring configuration files
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: '0644'
+      loop:
+        - { src: "infra/monitoring/prometheus/prometheus.yml", dest: "/opt/devops-portfolio/infra/monitoring/prometheus/prometheus.yml" }
+        - { src: "infra/monitoring/grafana/grafana.ini", dest: "/opt/devops-portfolio/infra/monitoring/grafana/grafana.ini" }
+        - { src: "infra/monitoring/grafana/datasources.yml", dest: "/opt/devops-portfolio/infra/monitoring/grafana/datasources.yml" }
+        - { src: "infra/monitoring/grafana/dashboards.yml", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards.yml" }
+
+    - name: Copy logging configuration files
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: '0644'
+      loop:
+        - { src: "infra/logging/loki/loki-config.yml", dest: "/opt/devops-portfolio/infra/logging/loki/loki-config.yml" }
+        - { src: "infra/logging/promtail/promtail-config.yml", dest: "/opt/devops-portfolio/infra/logging/promtail/promtail-config.yml" }
+
+    - name: Copy backup scripts
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: '0755'
+      loop:
+        - { src: "infra/backup/backup.sh", dest: "/opt/devops-portfolio/infra/backup/backup.sh" }
+        - { src: "infra/backup/restore.sh", dest: "/opt/devops-portfolio/infra/backup/restore.sh" }
+        - { src: "infra/backup/setup-cron.sh", dest: "/opt/devops-portfolio/infra/backup/setup-cron.sh" }
+        - { src: "infra/backup/backup-status.sh", dest: "/opt/devops-portfolio/infra/backup/backup-status.sh" }
+
+    - name: Copy docker-compose.yml
+      copy:
+        src: ./docker-compose.yml
+        dest: /opt/devops-portfolio/docker-compose.yml
+        mode: '0644'
+
+    - name: Stop existing containers
+      shell: docker compose -f /opt/devops-portfolio/docker-compose.yml down
+      args:
+        chdir: /opt/devops-portfolio
+      ignore_errors: true
+
+    - name: Start stack
+      shell: docker compose -f /opt/devops-portfolio/docker-compose.yml up -d
+      args:
+        chdir: /opt/devops-portfolio
+
+    - name: Wait for services to start
+      wait_for:
+        port: 8000
+        host: localhost
+        timeout: 60
+
+    - name: Check if SSL certificates exist
+      stat:
+        path: /etc/letsencrypt/live/pishchik-dev.tech/fullchain.pem
+      register: ssl_cert
+
+    - name: Run certbot if SSL certificates don't exist
+      shell: docker run --rm -v /etc/letsencrypt:/etc/letsencrypt -v /opt/devops-portfolio/infra/nginx/webroot:/var/www/certbot certbot/certbot certonly --webroot --webroot-path=/var/www/certbot --email admin@pishchik-dev.tech --agree-tos --no-eff-email -d pishchik-dev.tech -d www.pishchik-dev.tech
+      when: not ssl_cert.stat.exists
+
+    - name: Restart nginx after SSL setup
+      shell: docker restart nginx
+      when: not ssl_cert.stat.exists
+
+    - name: Health check - Grafana
+      uri:
+        url: http://localhost:3000/api/health
+        method: GET
+        status_code: 200
+      ignore_errors: true
+
+    - name: Health check - Prometheus
+      uri:
+        url: http://localhost:9090/-/healthy
+        method: GET
+        status_code: 200
+      ignore_errors: true
+
+    - name: Health check - Loki
+      uri:
+        url: http://localhost:3100/ready
+        method: GET
+        status_code: 200
+      ignore_errors: true
