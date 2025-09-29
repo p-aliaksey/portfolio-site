@@ -9,11 +9,32 @@
         state: directory
         mode: '0755'
 
-    - name: Copy project files
-      copy:
+    - name: Copy project files (using synchronize if available)
+      synchronize:
         src: ./infra
         dest: /opt/devops-portfolio/infra
+        recursive: true
+      ignore_errors: true
+
+    - name: Copy project files (fallback using copy)
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
         mode: '0755'
+      loop:
+        - { src: "infra/nginx/nginx.conf", dest: "/opt/devops-portfolio/infra/nginx/nginx.conf" }
+        - { src: "infra/nginx/nginx-http.conf", dest: "/opt/devops-portfolio/infra/nginx/nginx-http.conf" }
+        - { src: "infra/monitoring/prometheus/prometheus.yml", dest: "/opt/devops-portfolio/infra/monitoring/prometheus/prometheus.yml" }
+        - { src: "infra/monitoring/grafana/grafana.ini", dest: "/opt/devops-portfolio/infra/monitoring/grafana/grafana.ini" }
+        - { src: "infra/monitoring/grafana/datasources.yml", dest: "/opt/devops-portfolio/infra/monitoring/grafana/datasources.yml" }
+        - { src: "infra/monitoring/grafana/dashboards.yml", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards.yml" }
+        - { src: "infra/logging/loki/loki-config.yml", dest: "/opt/devops-portfolio/infra/logging/loki/loki-config.yml" }
+        - { src: "infra/logging/promtail/promtail-config.yml", dest: "/opt/devops-portfolio/infra/logging/promtail/promtail-config.yml" }
+        - { src: "infra/backup/backup.sh", dest: "/opt/devops-portfolio/infra/backup/backup.sh" }
+        - { src: "infra/backup/restore.sh", dest: "/opt/devops-portfolio/infra/backup/restore.sh" }
+        - { src: "infra/backup/setup-cron.sh", dest: "/opt/devops-portfolio/infra/backup/setup-cron.sh" }
+        - { src: "infra/backup/backup-status.sh", dest: "/opt/devops-portfolio/infra/backup/backup-status.sh" }
+      when: ansible_failed_result is defined
 
     - name: Copy docker-compose.yml
       copy:

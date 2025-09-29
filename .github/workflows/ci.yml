@@ -94,7 +94,7 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install ansible-core
           mkdir -p ~/.ansible/collections
-          ansible-galaxy collection install community.docker --force
+          ansible-galaxy collection install community.docker ansible.posix --force
       - name: Add SSH key
         uses: webfactory/ssh-agent@v0.9.0
         with:

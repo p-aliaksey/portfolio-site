@@ -3,9 +3,6 @@
   hosts: all
   become: true
   tasks:
-    - name: Install Ansible collections
-      command: ansible-galaxy collection install ansible.posix community.docker
-      ignore_errors: true
     - name: Install required packages
       apt:
         name:
