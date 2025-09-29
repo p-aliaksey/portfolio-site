@@ -1,0 +1,78 @@
+---
+- name: Deploy DevOps Portfolio stack
+  hosts: all
+  become: true
+  tasks:
+    - name: Create project directory
+      file:
+        path: /opt/devops-portfolio
+        state: directory
+        mode: '0755'
+
+    - name: Copy project files
+      synchronize:
+        src: ./infra
+        dest: /opt/devops-portfolio/infra
+        recursive: true
+
+    - name: Copy docker-compose.yml
+      copy:
+        src: ./docker-compose.yml
+        dest: /opt/devops-portfolio/docker-compose.yml
+
+    - name: Create webroot directory for certbot
+      file:
+        path: /opt/devops-portfolio/infra/nginx/webroot
+        state: directory
+        mode: '0755'
+
+    - name: Stop existing containers
+      shell: docker compose -f /opt/devops-portfolio/docker-compose.yml down
+      args:
+        chdir: /opt/devops-portfolio
+      ignore_errors: true
+
+    - name: Start stack
+      shell: docker compose -f /opt/devops-portfolio/docker-compose.yml up -d
+      args:
+        chdir: /opt/devops-portfolio
+
+    - name: Wait for services to start
+      wait_for:
+        port: 8000
+        host: localhost
+        timeout: 60
+
+    - name: Check if SSL certificates exist
+      stat:
+        path: /etc/letsencrypt/live/pishchik-dev.tech/fullchain.pem
+      register: ssl_cert
+
+    - name: Run certbot if SSL certificates don't exist
+      shell: docker run --rm -v /etc/letsencrypt:/etc/letsencrypt -v /opt/devops-portfolio/infra/nginx/webroot:/var/www/certbot certbot/certbot certonly --webroot --webroot-path=/var/www/certbot --email admin@pishchik-dev.tech --agree-tos --no-eff-email -d pishchik-dev.tech -d www.pishchik-dev.tech
+      when: not ssl_cert.stat.exists
+
+    - name: Restart nginx after SSL setup
+      shell: docker restart nginx
+      when: not ssl_cert.stat.exists
+
+    - name: Health check - Grafana
+      uri:
+        url: http://localhost:3000/api/health
+        method: GET
+        status_code: 200
+      ignore_errors: true
+
+    - name: Health check - Prometheus
+      uri:
+        url: http://localhost:9090/-/healthy
+        method: GET
+        status_code: 200
+      ignore_errors: true
+
+    - name: Health check - Loki
+      uri:
+        url: http://localhost:3100/ready
+        method: GET
+        status_code: 200
+      ignore_errors: true
