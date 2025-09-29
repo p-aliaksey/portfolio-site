@@ -56,6 +56,24 @@ echo -e "\n${BLUE}=== 1. ПРОВЕРКА КОНТЕЙНЕРОВ ===${NC}"
 echo "Статус всех контейнеров:"
 docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
+echo -e "\n${BLUE}=== 1.1. ПРОВЕРКА NGINX ===${NC}"
+if docker ps | grep -q nginx; then
+    echo -e "${GREEN}✓ Nginx запущен${NC}"
+    echo "Проверяем конфигурацию nginx..."
+    if docker exec nginx nginx -t 2>/dev/null; then
+        echo -e "${GREEN}✓ Конфигурация nginx корректна${NC}"
+    else
+        echo -e "${RED}✗ Ошибка в конфигурации nginx${NC}"
+        echo "Логи nginx:"
+        docker logs nginx --tail 5
+    fi
+else
+    echo -e "${RED}✗ Nginx не запущен${NC}"
+    echo "Попытка запуска nginx..."
+    docker compose up -d nginx
+    sleep 10
+fi
+
 echo -e "\n${BLUE}=== 2. ПРОВЕРКА ПОРТОВ ===${NC}"
 echo "Проверяем доступность портов внутри Docker сети:"
 
@@ -73,6 +91,28 @@ check_status "ГЛАВНАЯ СТРАНИЦА" "https://pishchik-dev.tech/" "200
 check_status "GRAFANA" "https://pishchik-dev.tech/grafana/" "200"
 check_status "PROMETHEUS" "https://pishchik-dev.tech/prometheus/" "200"
 check_status "LOKI" "https://pishchik-dev.tech/loki/" "200"
+
+echo -e "\n${BLUE}=== 3.1. ТЕСТ С РЕДИРЕКТАМИ ===${NC}"
+echo "Тестируем с автоматическим следованием редиректов:"
+
+# Функция для тестирования с редиректами
+test_with_redirects() {
+    local name=$1
+    local url=$2
+    
+    echo -n "Тестируем $name с редиректами... "
+    response=$(curl -L -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null)
+    
+    if [ "$response" = "200" ]; then
+        echo -e "${GREEN}✓ $response${NC}"
+    else
+        echo -e "${RED}✗ $response${NC}"
+    fi
+}
+
+test_with_redirects "Grafana" "https://pishchik-dev.tech/grafana/"
+test_with_redirects "Prometheus" "https://pishchik-dev.tech/prometheus/"
+test_with_redirects "Loki" "https://pishchik-dev.tech/loki/"
 
 echo -e "\n${BLUE}=== 4. ДЕТАЛЬНАЯ ДИАГНОСТИКА ===${NC}"
 
@@ -160,3 +200,15 @@ echo "7. Очистить кэш браузера и попробовать в �
 echo -e "\n${GREEN}=========================================="
 echo "ДИАГНОСТИКА ЗАВЕРШЕНА"
 echo "==========================================${NC}"
+
+echo -e "\n${YELLOW}=== ИТОГОВАЯ СВОДКА ===${NC}"
+echo "Проверьте доступность сервисов в браузере:"
+echo "- Главная страница: https://pishchik-dev.tech/"
+echo "- Grafana: https://pishchik-dev.tech/grafana/"
+echo "- Prometheus: https://pishchik-dev.tech/prometheus/"
+echo "- Loki: https://pishchik-dev.tech/loki/"
+
+echo -e "\n${YELLOW}Если все работает, сделайте коммит:${NC}"
+echo "git add ."
+echo "git commit -m 'Fix UI services configuration'"
+echo "git push origin main"
