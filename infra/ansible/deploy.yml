@@ -69,6 +69,19 @@
         - { src: "infra/backup/setup-cron.sh", dest: "/opt/devops-portfolio/infra/backup/setup-cron.sh" }
         - { src: "infra/backup/backup-status.sh", dest: "/opt/devops-portfolio/infra/backup/backup-status.sh" }
 
+    - name: Copy application files
+      synchronize:
+        src: "{{ project_root }}/app/"
+        dest: /opt/devops-portfolio/app/
+        delete: yes
+        recursive: yes
+
+    - name: Copy Dockerfile
+      copy:
+        src: "{{ project_root }}/Dockerfile"
+        dest: /opt/devops-portfolio/Dockerfile
+        mode: '0644'
+
     - name: Copy docker-compose.yml
       copy:
         src: "{{ project_root }}/docker-compose.yml"
