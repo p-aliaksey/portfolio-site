@@ -94,6 +94,11 @@
         chdir: /opt/devops-portfolio
       ignore_errors: true
 
+    - name: Build application image
+      shell: docker compose -f /opt/devops-portfolio/docker-compose.yml build app
+      args:
+        chdir: /opt/devops-portfolio
+
     - name: Start stack
       shell: docker compose -f /opt/devops-portfolio/docker-compose.yml up -d
       args:
