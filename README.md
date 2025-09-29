@@ -343,3 +343,4 @@ crontab -l
 **© 2025 DevOps Portfolio - Полнофункциональный DevOps проект с автоматизацией и мониторингом**
 
 60.6 latest http
+add_my_v1.034_https_loki_ui 443 порт все успешно работает на HTTPS КРУТО!
