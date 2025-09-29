@@ -8,3 +8,11 @@ providers:
     updateIntervalSeconds: 5
     options:
       path: /var/lib/grafana/dashboards
+  - name: 'loki-dashboards'
+    orgId: 1
+    folder: 'Loki'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 5
+    options:
+      path: /var/lib/grafana/dashboards/loki
