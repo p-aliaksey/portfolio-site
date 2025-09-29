@@ -11,11 +11,11 @@ nav{display:flex;justify-content:space-between;align-items:center;padding:16px 2
 .links a:hover{color:var(--text);background:rgba(37,84,230,0.08)}
 
 /* Language switcher */
-.language-switcher{display:flex;gap:4px;margin-left:8px}
-.lang-btn{padding:6px 12px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600;transition:all 0.2s}
-.lang-btn{color:var(--muted);background:transparent;border:1px solid transparent}
+.language-switcher{display:flex;gap:8px;margin-left:16px;align-items:center}
+.lang-btn{padding:8px 16px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600;transition:all 0.2s;min-width:44px;text-align:center;display:inline-block}
+.lang-btn{color:var(--muted);background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.1)}
 .lang-btn:hover{color:var(--text);background:rgba(37,84,230,0.08)}
-.lang-btn.active{color:var(--primary);background:rgba(37,84,230,0.1);border-color:rgba(37,84,230,0.2)}
+.lang-btn.active{color:var(--primary);background:rgba(37,84,230,0.15);border-color:rgba(37,84,230,0.3);font-weight:700}
 
 /* Hero */
 .hero{padding:72px 24px;background:radial-gradient(1200px 600px at 70% -10%, rgba(51,102,255,.15), rgba(255,255,255,0)) ,linear-gradient(180deg, #fff 0%, #f7f9fc 100%)}
