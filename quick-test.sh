@@ -59,4 +59,5 @@ echo "Nginx (последние ошибки):"
 docker logs nginx --tail 5 | grep -i error || echo "Ошибок не найдено"
 
 echo -e "\n${YELLOW}Для полной диагностики запустите: ./test-ui-services.sh${NC}"
-echo -e "${YELLOW}Для исправления проблем запустите: ./fix-ui-services.sh${NC}"
+echo -e "${YELLOW}Для исправления Grafana запустите: ./fix-grafana.sh${NC}"
+echo -e "${YELLOW}Для полного перезапуска nginx: ./restart-nginx.sh${NC}"
