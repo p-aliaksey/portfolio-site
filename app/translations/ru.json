@@ -6,6 +6,20 @@
     "architecture": "Архитектура",
     "metrics": "Метрики"
   },
+  "about": {
+    "title": "О проекте",
+    "subtitle": "Проект демонстрирует полный путь от кода до продакшена",
+    "architecture": "Архитектура",
+    "features": {
+      "iac": "IaC: Terraform управляет VM в Yandex Cloud",
+      "config": "Конфигурация: Ansible устанавливает Docker и деплоит контейнеры",
+      "cicd": "CI/CD: GitHub Actions билдит образ, пушит и вызывает Ansible",
+      "proxy": "Реверс-прокси: Nginx",
+      "monitoring": "Мониторинг: Prometheus + Grafana",
+      "logging": "Логи: Loki + Promtail",
+      "backups": "Бэкапы: restic/rclone (скрипты)"
+    }
+  },
   "home": {
     "title": "DevOps Инженер",
     "subtitle": "DevOps инженер с опытом автоматизации и построения инфраструктур",

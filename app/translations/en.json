@@ -6,6 +6,20 @@
     "architecture": "Architecture",
     "metrics": "Metrics"
   },
+  "about": {
+    "title": "About Project",
+    "subtitle": "Project demonstrates the full path from code to production",
+    "architecture": "Architecture",
+    "features": {
+      "iac": "IaC: Terraform manages VM in Yandex Cloud",
+      "config": "Configuration: Ansible installs Docker and deploys containers",
+      "cicd": "CI/CD: GitHub Actions builds image, pushes and calls Ansible",
+      "proxy": "Reverse proxy: Nginx",
+      "monitoring": "Monitoring: Prometheus + Grafana",
+      "logging": "Logs: Loki + Promtail",
+      "backups": "Backups: restic/rclone (scripts)"
+    }
+  },
   "home": {
     "title": "DevOps Engineer",
     "subtitle": "DevOps engineer with experience in automation and infrastructure building",

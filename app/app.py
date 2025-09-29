@@ -39,7 +39,7 @@ def create_app() -> Flask:
     @app.route("/about")
     def about():
         request_counter.labels(path="/about").inc()
-        return render_template("about.html")
+        return render_template("about.html", t=translations.get_all_translations(), translations=translations)
 
     @app.route("/metrics")
     def metrics():
