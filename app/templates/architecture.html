@@ -7,11 +7,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <style>
-        .architecture-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
         .architecture-diagram {
             background: white;
             border-radius: 10px;
@@ -65,70 +60,80 @@
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="{{ url_for('index') }}" class="nav-logo">DevOps Portfolio</a>
-            <div class="nav-menu">
-                <a href="{{ url_for('index') }}" class="nav-link">{{ t.nav.home }}</a>
-                <a href="{{ url_for('about') }}" class="nav-link">{{ t.nav.about }}</a>
-                <a href="{{ url_for('monitoring') }}" class="nav-link">{{ t.nav.monitoring }}</a>
-                <a href="{{ url_for('architecture') }}" class="nav-link active">{{ t.nav.architecture }}</a>
-                <a href="{{ url_for('metrics') }}" class="nav-link">{{ t.nav.metrics }}</a>
+    <header>
+        <nav>
+            <a class="brand" href="/">DevOps Portfolio</a>
+            <div class="links">
+                <a href="/about">{{ t.nav.about }}</a>
+                <a href="/monitoring">{{ t.nav.monitoring }}</a>
+                <a href="/architecture">{{ t.nav.architecture }}</a>
                 <div class="language-switcher">
                     <a href="/set_language/ru" class="lang-btn {{ 'active' if translations.get_language() == 'ru' else '' }}">RU</a>
                     <a href="/set_language/en" class="lang-btn {{ 'active' if translations.get_language() == 'en' else '' }}">EN</a>
                 </div>
             </div>
-        </div>
-    </nav>
+        </nav>
+    </header>
 
-    <div class="architecture-container">
-        <h1>🏗️ {{ t.architecture.title }}</h1>
-        <p>{{ t.architecture.subtitle }}</p>
+    <main>
+        <section class="container" style="padding: 48px 24px">
+            <h1>{{ t.architecture.title }}</h1>
+            <p class="lead">{{ t.architecture.subtitle }}</p>
 
         <div class="architecture-diagram">
-            <h2>🏗️ {{ t.architecture.diagram_title }}</h2>
+            <h2>🏗️ Diagram</h2>
             <div class="mermaid">
-graph TB
+graph LR
     %% User
     U[👤 Пользователь<br/>Браузер]
     
-    %% GitHub
-    GH[🐙 GitHub<br/>Исходный код]
-    GHA[⚙️ GitHub Actions<br/>CI/CD Pipeline]
+    %% GitHub & CI/CD
+    subgraph "🐙 GitHub & CI/CD"
+        GH[GitHub<br/>Исходный код]
+        GHA[GitHub Actions<br/>CI/CD Pipeline]
+    end
     
-    %% Yandex Cloud VM
-    VM[☁️ Yandex Cloud VM<br/>Ubuntu 24.04 LTS<br/>2 CPU, 2GB RAM]
+    %% Terraform
+    subgraph "🏗️ Infrastructure"
+        TF[Terraform<br/>IaC]
+    end
+    
+    %% Yandex Cloud
+    subgraph "☁️ Yandex Cloud"
+        VM[VM<br/>Ubuntu 24.04 LTS<br/>2 CPU, 2GB RAM]
+    end
+    
+    %% Ansible
+    subgraph "🔧 Configuration"
+        ANS[Ansible<br/>Playbooks]
+    end
     
     %% Docker Containers
     subgraph "🐳 Docker Containers"
-        N[🌐 Nginx<br/>Reverse Proxy<br/>Port 80/443]
-        A[🚀 Flask App<br/>Portfolio Site<br/>Port 8000]
-        P[📊 Prometheus<br/>Metrics Collection<br/>Port 9090]
-        G[📈 Grafana<br/>Dashboards<br/>Port 3001]
-        L[📝 Loki<br/>Log Storage<br/>Port 3100]
-        PT[📋 Promtail<br/>Log Collector]
+        N[🌐 Nginx<br/>Port 80/443]
+        A[🚀 Flask App<br/>Port 8000]
+        P[📊 Prometheus<br/>Port 9090]
+        G[📈 Grafana<br/>Port 3001]
+        L[📝 Loki<br/>Port 3100]
+        PT[📋 Promtail]
     end
     
     %% External Services
-    GHCR[📦 GitHub Container Registry<br/>Docker Images]
-    ANS[🔧 Ansible Playbooks<br/>Configuration]
+    GHCR[📦 GitHub Container Registry]
+    DATA[💾 Data Storage]
     
-    %% Data Storage
-    DATA[💾 Data Storage<br/>SQLite + Files]
-    
-    %% Connections
+    %% Main Flow
     U -->|HTTPS| N
     N -->|Routes| A
-    N -->|/prometheus/| P
-    N -->|/grafana/| G
-    N -->|/loki/| L
     
     GH -->|Push| GHA
-    GHA -->|Build & Deploy| GHCR
-    GHA -->|Infrastructure| VM
+    GHA -->|Build| GHCR
+    GHA -->|Deploy| TF
+    TF -->|Create| VM
     GHA -->|Configure| ANS
+    ANS -->|Setup| VM
     
+    GHCR -->|Pull| VM
     VM -->|Runs| N
     VM -->|Runs| A
     VM -->|Runs| P
@@ -136,49 +141,34 @@ graph TB
     VM -->|Runs| L
     VM -->|Runs| PT
     
-    GHCR -->|Pulls| A
-    GHCR -->|Pulls| N
-    GHCR -->|Pulls| P
-    GHCR -->|Pulls| G
-    GHCR -->|Pulls| L
-    GHCR -->|Pulls| PT
-    
-    ANS -->|Configures| VM
-    
+    %% Monitoring & Logging
     P -->|Scrapes| A
-    P -->|Scrapes| N
-    P -->|Scrapes| G
-    P -->|Scrapes| L
-    P -->|Scrapes| PT
-    
     G -->|Queries| P
-    G -->|Queries| L
+    PT -->|Logs| L
+    G -->|Logs| L
     
-    PT -->|Collects| A
-    PT -->|Collects| N
-    PT -->|Collects| P
-    PT -->|Collects| G
-    PT -->|Collects| L
-    PT -->|Sends to| L
-    
+    %% Data Storage
     A -->|Stores| DATA
     G -->|Stores| DATA
     L -->|Stores| DATA
     
     %% Styling
     classDef userClass fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000
-    classDef githubClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000
-    classDef vmClass fill:#e8f5e8,stroke:#388e3c,stroke-width:3px,color:#000
-    classDef containerClass fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
-    classDef serviceClass fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000
-    classDef dataClass fill:#f1f8e9,stroke:#689f38,stroke-width:2px,color:#000
+    classDef githubClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef terraformClass fill:#e8f5e8,stroke:#388e3c,stroke-width:2px,color:#000
+    classDef cloudClass fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    classDef ansibleClass fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000
+    classDef containerClass fill:#f1f8e9,stroke:#689f38,stroke-width:2px,color:#000
+    classDef serviceClass fill:#e0f2f1,stroke:#00695c,stroke-width:2px,color:#000
     
     class U userClass
     class GH,GHA githubClass
-    class VM vmClass
+    class TF terraformClass
+    class VM cloudClass
+    class ANS ansibleClass
     class N,A containerClass
     class P,G,L,PT serviceClass
-    class GHCR,ANS,DATA dataClass
+    class GHCR,DATA serviceClass
             </div>
         </div>
 
@@ -283,7 +273,8 @@ graph TB
                 <strong>🔑 SSH:</strong> Доступ только по ключам
             </div>
         </div>
-    </div>
+        </section>
+    </main>
 
     <script>
         mermaid.initialize({ 
@@ -295,5 +286,9 @@ graph TB
             }
         });
     </script>
+
+    <footer>
+        <p>© 2025 DevOps Portfolio</p>
+    </footer>
 </body>
 </html>
