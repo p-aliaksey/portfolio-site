@@ -1,0 +1,10 @@
+# Личные данные и секреты
+*.env
+.env.local
+secrets/
+credentials/
+
+# Временные файлы
+*.tmp
+*.log
+.DS_Store
