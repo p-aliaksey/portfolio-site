@@ -22,6 +22,8 @@
         - /opt/devops-portfolio/infra/nginx/webroot
         - /opt/devops-portfolio/infra/monitoring
         - /opt/devops-portfolio/infra/monitoring/prometheus
+        - /opt/devops-portfolio/infra/monitoring/prometheus/rules
+        - /opt/devops-portfolio/infra/monitoring/alertmanager
         - /opt/devops-portfolio/infra/monitoring/grafana
         - /opt/devops-portfolio/infra/monitoring/grafana/dashboards
         - /opt/devops-portfolio/infra/logging
@@ -45,6 +47,8 @@
         mode: '0644'
       loop:
         - { src: "infra/monitoring/prometheus/prometheus.yml", dest: "/opt/devops-portfolio/infra/monitoring/prometheus/prometheus.yml" }
+        - { src: "infra/monitoring/prometheus/rules/alerts.yml", dest: "/opt/devops-portfolio/infra/monitoring/prometheus/rules/alerts.yml" }
+        - { src: "infra/monitoring/alertmanager/alertmanager.yml", dest: "/opt/devops-portfolio/infra/monitoring/alertmanager/alertmanager.yml" }
         - { src: "infra/monitoring/grafana/grafana.ini", dest: "/opt/devops-portfolio/infra/monitoring/grafana/grafana.ini" }
         - { src: "infra/monitoring/grafana/datasources.yml", dest: "/opt/devops-portfolio/infra/monitoring/grafana/datasources.yml" }
         - { src: "infra/monitoring/grafana/dashboards.yml", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards.yml" }
@@ -57,6 +61,21 @@
       loop:
         - { src: "infra/logging/loki/loki-config.yml", dest: "/opt/devops-portfolio/infra/logging/loki/loki-config.yml" }
         - { src: "infra/logging/promtail/promtail-config.yml", dest: "/opt/devops-portfolio/infra/logging/promtail/promtail-config.yml" }
+
+    - name: Copy Grafana dashboards
+      copy:
+        src: "{{ project_root }}/{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: '0644'
+      loop:
+        - { src: "infra/monitoring/grafana/dashboards/application-metrics.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/application-metrics.json" }
+        - { src: "infra/monitoring/grafana/dashboards/docker-containers.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/docker-containers.json" }
+        - { src: "infra/monitoring/grafana/dashboards/logs-dashboard.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/logs-dashboard.json" }
+        - { src: "infra/monitoring/grafana/dashboards/logs-metrics.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/logs-metrics.json" }
+        - { src: "infra/monitoring/grafana/dashboards/loki-logs-dashboard.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/loki-logs-dashboard.json" }
+        - { src: "infra/monitoring/grafana/dashboards/loki-metrics-dashboard.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/loki-metrics-dashboard.json" }
+        - { src: "infra/monitoring/grafana/dashboards/promtail-dashboard.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/promtail-dashboard.json" }
+        - { src: "infra/monitoring/grafana/dashboards/system-overview.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/system-overview.json" }
 
     - name: Copy backup scripts
       copy:

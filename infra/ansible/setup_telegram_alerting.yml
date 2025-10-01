@@ -17,6 +17,22 @@
         state: directory
         mode: '0755'
 
+    - name: Create all monitoring directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /opt/devops-portfolio/infra/monitoring
+        - /opt/devops-portfolio/infra/monitoring/alertmanager
+        - /opt/devops-portfolio/infra/monitoring/prometheus
+        - /opt/devops-portfolio/infra/monitoring/prometheus/rules
+        - /opt/devops-portfolio/infra/monitoring/grafana
+        - /opt/devops-portfolio/infra/monitoring/grafana/dashboards
+        - /opt/devops-portfolio/infra/logging
+        - /opt/devops-portfolio/infra/logging/loki
+        - /opt/devops-portfolio/infra/logging/promtail
+
     - name: Copy alertmanager configuration
       copy:
         src: "{{ project_root }}/infra/monitoring/alertmanager/alertmanager.yml"
