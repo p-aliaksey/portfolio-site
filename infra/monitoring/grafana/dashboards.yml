@@ -16,3 +16,11 @@ providers:
     updateIntervalSeconds: 5
     options:
       path: /var/lib/grafana/dashboards/loki
+  - name: 'node-exporter-dashboards'
+    orgId: 1
+    folder: 'System Monitoring'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 5
+    options:
+      path: /var/lib/grafana/dashboards/node-exporter

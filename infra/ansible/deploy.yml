@@ -69,6 +69,12 @@
         - { src: "infra/logging/loki/loki-config.yml", dest: "/opt/devops-portfolio/infra/logging/loki/loki-config.yml" }
         - { src: "infra/logging/promtail/promtail-config.yml", dest: "/opt/devops-portfolio/infra/logging/promtail/promtail-config.yml" }
 
+    - name: Create node-exporter dashboards directory
+      file:
+        path: /opt/devops-portfolio/infra/monitoring/grafana/dashboards/node-exporter
+        state: directory
+        mode: '0755'
+
     - name: Copy Grafana dashboards
       copy:
         src: "{{ project_root }}/{{ item.src }}"
@@ -83,6 +89,7 @@
         - { src: "infra/monitoring/grafana/dashboards/loki-metrics-dashboard.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/loki-metrics-dashboard.json" }
         - { src: "infra/monitoring/grafana/dashboards/promtail-dashboard.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/promtail-dashboard.json" }
         - { src: "infra/monitoring/grafana/dashboards/system-overview.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/system-overview.json" }
+        - { src: "infra/monitoring/grafana/dashboards/node-exporter.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/node-exporter/node-exporter.json" }
 
     - name: Verify alertmanager.yml exists and is a file
       stat:
