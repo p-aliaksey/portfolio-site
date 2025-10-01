@@ -40,11 +40,18 @@
         - { src: "infra/nginx/nginx.conf", dest: "/opt/devops-portfolio/infra/nginx/nginx.conf" }
         - { src: "infra/nginx/nginx-http.conf", dest: "/opt/devops-portfolio/infra/nginx/nginx-http.conf" }
 
+    - name: Remove alertmanager directory if it exists as directory
+      file:
+        path: /opt/devops-portfolio/infra/monitoring/alertmanager/alertmanager.yml
+        state: absent
+      when: ansible_check_mode == false
+
     - name: Copy monitoring configuration files
       copy:
         src: "{{ project_root }}/{{ item.src }}"
         dest: "{{ item.dest }}"
         mode: '0644'
+        force: yes
       loop:
         - { src: "infra/monitoring/prometheus/prometheus.yml", dest: "/opt/devops-portfolio/infra/monitoring/prometheus/prometheus.yml" }
         - { src: "infra/monitoring/prometheus/rules/alerts.yml", dest: "/opt/devops-portfolio/infra/monitoring/prometheus/rules/alerts.yml" }
@@ -77,14 +84,14 @@
         - { src: "infra/monitoring/grafana/dashboards/promtail-dashboard.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/promtail-dashboard.json" }
         - { src: "infra/monitoring/grafana/dashboards/system-overview.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/system-overview.json" }
 
-    - name: Verify alertmanager.yml exists
+    - name: Verify alertmanager.yml exists and is a file
       stat:
         path: /opt/devops-portfolio/infra/monitoring/alertmanager/alertmanager.yml
       register: alertmanager_file
 
     - name: Display alertmanager file status
       debug:
-        msg: "Alertmanager file exists: {{ alertmanager_file.stat.exists }}"
+        msg: "Alertmanager file exists: {{ alertmanager_file.stat.exists }}, is file: {{ alertmanager_file.stat.isreg }}, is directory: {{ alertmanager_file.stat.isdir }}"
 
     - name: List alertmanager directory contents
       shell: ls -la /opt/devops-portfolio/infra/monitoring/alertmanager/
@@ -94,6 +101,21 @@
     - name: Display alertmanager directory contents
       debug:
         msg: "{{ alertmanager_dir.stdout_lines }}"
+
+    - name: Fix alertmanager.yml if it's a directory
+      shell: |
+        if [ -d "/opt/devops-portfolio/infra/monitoring/alertmanager/alertmanager.yml" ]; then
+          rm -rf "/opt/devops-portfolio/infra/monitoring/alertmanager/alertmanager.yml"
+        fi
+      when: alertmanager_file.stat.isdir | default(false)
+
+    - name: Recreate alertmanager.yml file
+      copy:
+        src: "{{ project_root }}/infra/monitoring/alertmanager/alertmanager.yml"
+        dest: /opt/devops-portfolio/infra/monitoring/alertmanager/alertmanager.yml
+        mode: '0644'
+        force: yes
+      when: alertmanager_file.stat.isdir | default(false)
 
     - name: Copy backup scripts
       copy:
