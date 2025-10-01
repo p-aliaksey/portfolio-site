@@ -2,11 +2,8 @@
 - name: Install Docker
   import_playbook: install_docker.yml
 
-- name: Deploy Application
+- name: Deploy Application with Alerting
   import_playbook: deploy.yml
-
-- name: Setup Telegram Alerting
-  import_playbook: setup_telegram_alerting.yml
 
 - name: Configure Telegram Bot
   import_playbook: configure_telegram_bot.yml

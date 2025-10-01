@@ -77,6 +77,24 @@
         - { src: "infra/monitoring/grafana/dashboards/promtail-dashboard.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/promtail-dashboard.json" }
         - { src: "infra/monitoring/grafana/dashboards/system-overview.json", dest: "/opt/devops-portfolio/infra/monitoring/grafana/dashboards/system-overview.json" }
 
+    - name: Verify alertmanager.yml exists
+      stat:
+        path: /opt/devops-portfolio/infra/monitoring/alertmanager/alertmanager.yml
+      register: alertmanager_file
+
+    - name: Display alertmanager file status
+      debug:
+        msg: "Alertmanager file exists: {{ alertmanager_file.stat.exists }}"
+
+    - name: List alertmanager directory contents
+      shell: ls -la /opt/devops-portfolio/infra/monitoring/alertmanager/
+      register: alertmanager_dir
+      ignore_errors: true
+
+    - name: Display alertmanager directory contents
+      debug:
+        msg: "{{ alertmanager_dir.stdout_lines }}"
+
     - name: Copy backup scripts
       copy:
         src: "{{ project_root }}/{{ item.src }}"
@@ -116,6 +134,23 @@
           TELEGRAM_CHAT_ID=your_chat_id_here
         dest: /opt/devops-portfolio/.env
         mode: '0644'
+
+    - name: Verify all required files exist before starting
+      stat:
+        path: "{{ item }}"
+      register: required_files
+      loop:
+        - /opt/devops-portfolio/infra/monitoring/alertmanager/alertmanager.yml
+        - /opt/devops-portfolio/infra/monitoring/prometheus/rules/alerts.yml
+        - /opt/devops-portfolio/infra/monitoring/prometheus/prometheus.yml
+        - /opt/devops-portfolio/infra/logging/loki/loki-config.yml
+        - /opt/devops-portfolio/infra/logging/promtail/promtail-config.yml
+        - /opt/devops-portfolio/.env
+
+    - name: Display file verification results
+      debug:
+        msg: "File {{ item.item }} exists: {{ item.stat.exists }}"
+      loop: "{{ required_files.results }}"
 
     - name: Stop existing containers
       shell: docker compose -f /opt/devops-portfolio/docker-compose.yml down
