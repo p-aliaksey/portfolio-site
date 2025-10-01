@@ -29,7 +29,7 @@ cp "$ALERTMANAGER_CONFIG" "${ALERTMANAGER_CONFIG}.backup.$(date +%Y%m%d_%H%M%S)"
 
 # Update bot token and chat ID in the config file
 sed -i "s/your_bot_token_here/$BOT_TOKEN/g" "$ALERTMANAGER_CONFIG"
-sed -i "s/your_chat_id_here/$CHAT_ID/g" "$ALERTMANAGER_CONFIG"
+sed -i "s/chat_id: 123456789/chat_id: $CHAT_ID/g" "$ALERTMANAGER_CONFIG"
 
 echo "✅ Alertmanager configuration updated successfully!"
 

@@ -39,7 +39,7 @@ groups:
           severity: warning
         annotations:
           summary: "High memory usage"
-          description: "Memory usage is {{ $value | humanizePercentage }} of the limit"
+          description: "Memory usage is {{ $value | printf \"%.2f\" }}% of the limit"
 
       # High CPU usage
       - alert: HighCPUUsage
@@ -49,7 +49,7 @@ groups:
           severity: warning
         annotations:
           summary: "High CPU usage"
-          description: "CPU usage is {{ $value | humanizePercentage }}"
+          description: "CPU usage is {{ $value | printf \"%.2f\" }}%"
 
   - name: infrastructure.rules
     rules:
@@ -113,7 +113,7 @@ groups:
           severity: critical
         annotations:
           summary: "Disk space is low"
-          description: "Disk space is {{ $value | humanizePercentage }} full"
+          description: "Disk space is {{ $value | printf \"%.2f\" }}% full"
 
       # High disk I/O
       - alert: HighDiskIO
@@ -123,7 +123,7 @@ groups:
           severity: warning
         annotations:
           summary: "High disk I/O"
-          description: "Disk I/O is {{ $value | humanizePercentage }}"
+          description: "Disk I/O is {{ $value | printf \"%.2f\" }}%"
 
       # Network connectivity issues
       - alert: NetworkConnectivityIssues
@@ -165,7 +165,7 @@ groups:
           severity: warning
         annotations:
           summary: "Backup size is too small"
-          description: "Backup size is only {{ $value | humanizeBytes }}, possible issue"
+          description: "Backup size is only {{ $value }} bytes, possible issue"
 
   - name: docker.rules
     rules:

@@ -49,7 +49,7 @@ receivers:
   - name: 'telegram-notifications'
     telegram_configs:
       - bot_token: 'your_bot_token_here'
-        chat_id: 'your_chat_id_here'
+        chat_id: 123456789
         api_url: 'https://api.telegram.org'
         message: |
           🚨 *Alert: {{ .GroupLabels.alertname }}*
@@ -71,7 +71,7 @@ receivers:
   - name: 'telegram-critical'
     telegram_configs:
       - bot_token: 'your_bot_token_here'
-        chat_id: 'your_chat_id_here'
+        chat_id: 123456789
         api_url: 'https://api.telegram.org'
         message: |
           🔥 *CRITICAL ALERT* 🔥
@@ -92,7 +92,7 @@ receivers:
   - name: 'telegram-warning'
     telegram_configs:
       - bot_token: 'your_bot_token_here'
-        chat_id: 'your_chat_id_here'
+        chat_id: 123456789
         api_url: 'https://api.telegram.org'
         message: |
           ⚠️ *WARNING ALERT* ⚠️
@@ -111,7 +111,7 @@ receivers:
   - name: 'telegram-info'
     telegram_configs:
       - bot_token: 'your_bot_token_here'
-        chat_id: 'your_chat_id_here'
+        chat_id: 123456789
         api_url: 'https://api.telegram.org'
         message: |
           ℹ️ *INFO ALERT* ℹ️

@@ -137,6 +137,7 @@
         - { src: "infra/monitoring/setup-telegram-bot.sh", dest: "/opt/devops-portfolio/setup-telegram-bot.sh" }
         - { src: "infra/monitoring/update-alertmanager-config.sh", dest: "/opt/devops-portfolio/update-alertmanager-config.sh" }
         - { src: "infra/monitoring/test-alerts.sh", dest: "/opt/devops-portfolio/test-alerts.sh" }
+        - { src: "infra/monitoring/test-issues.sh", dest: "/opt/devops-portfolio/test-issues.sh" }
 
     - name: Copy application files
       synchronize:
