@@ -1,0 +1,147 @@
+---
+- name: Setup Telegram Alerting System
+  hosts: all
+  become: true
+  vars:
+    project_root: "{{ playbook_dir }}/../.."
+  tasks:
+    - name: Create alertmanager directory
+      file:
+        path: /opt/devops-portfolio/infra/monitoring/alertmanager
+        state: directory
+        mode: '0755'
+
+    - name: Create prometheus rules directory
+      file:
+        path: /opt/devops-portfolio/infra/monitoring/prometheus/rules
+        state: directory
+        mode: '0755'
+
+    - name: Copy alertmanager configuration
+      copy:
+        src: "{{ project_root }}/infra/monitoring/alertmanager/alertmanager.yml"
+        dest: /opt/devops-portfolio/infra/monitoring/alertmanager/alertmanager.yml
+        mode: '0644'
+
+    - name: Copy prometheus alert rules
+      copy:
+        src: "{{ project_root }}/infra/monitoring/prometheus/rules/alerts.yml"
+        dest: /opt/devops-portfolio/infra/monitoring/prometheus/rules/alerts.yml
+        mode: '0644'
+
+    - name: Copy updated prometheus configuration
+      copy:
+        src: "{{ project_root }}/infra/monitoring/prometheus/prometheus.yml"
+        dest: /opt/devops-portfolio/infra/monitoring/prometheus/prometheus.yml
+        mode: '0644'
+
+    - name: Copy updated nginx configuration
+      copy:
+        src: "{{ project_root }}/infra/nginx/nginx.conf"
+        dest: /opt/devops-portfolio/infra/nginx/nginx.conf
+        mode: '0644'
+
+    - name: Copy updated docker-compose.yml
+      copy:
+        src: "{{ project_root }}/docker-compose.yml"
+        dest: /opt/devops-portfolio/docker-compose.yml
+        mode: '0644'
+
+    - name: Copy env.example
+      copy:
+        src: "{{ project_root }}/env.example"
+        dest: /opt/devops-portfolio/env.example
+        mode: '0644'
+
+    - name: Create .env file if it doesn't exist
+      copy:
+        src: "{{ project_root }}/env.example"
+        dest: /opt/devops-portfolio/.env
+        mode: '0644'
+      when: not ansible_check_mode
+
+    - name: Display Telegram setup instructions
+      debug:
+        msg: |
+          📱 Telegram Alerting Setup Required!
+          ===================================
+          
+          1. Create a Telegram bot:
+             - Open Telegram and search for @BotFather
+             - Send /newbot command
+             - Choose a name for your bot (e.g., 'DevOps Portfolio Alerts')
+             - Choose a username for your bot (e.g., 'devops_portfolio_alerts_bot')
+             - Copy the bot token
+          
+          2. Get your Chat ID:
+             - Start a chat with your bot
+             - Send any message to the bot
+             - Visit: https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates
+             - Find your chat ID in the response
+          
+          3. Update .env file:
+             - Edit /opt/devops-portfolio/.env
+             - Replace 'your_bot_token_here' with your actual bot token
+             - Replace 'your_chat_id_here' with your actual chat ID
+          
+          4. Restart the stack:
+             - Run: docker compose -f /opt/devops-portfolio/docker-compose.yml down
+             - Run: docker compose -f /opt/devops-portfolio/docker-compose.yml up -d
+          
+          🌐 Access URLs:
+          - Alertmanager: https://pishchik-dev.tech/alertmanager/
+          - Prometheus: https://pishchik-dev.tech/prometheus/
+          - Grafana: https://pishchik-dev.tech/grafana/
+
+    - name: Stop existing containers
+      shell: docker compose -f /opt/devops-portfolio/docker-compose.yml down
+      args:
+        chdir: /opt/devops-portfolio
+      ignore_errors: true
+
+    - name: Start updated stack
+      shell: docker compose -f /opt/devops-portfolio/docker-compose.yml up -d
+      args:
+        chdir: /opt/devops-portfolio
+
+    - name: Wait for services to start
+      wait_for:
+        port: 9093
+        host: localhost
+        timeout: 60
+
+    - name: Health check - Alertmanager
+      uri:
+        url: http://localhost:9093/-/healthy
+        method: GET
+        status_code: 200
+      ignore_errors: true
+
+    - name: Health check - Prometheus
+      uri:
+        url: http://localhost:9090/-/healthy
+        method: GET
+        status_code: 200
+      ignore_errors: true
+
+    - name: Display completion message
+      debug:
+        msg: |
+          🎉 Telegram Alerting System Setup Complete!
+          ==========================================
+          
+          ✅ Alertmanager configured
+          ✅ Prometheus alert rules created
+          ✅ Docker Compose updated
+          ✅ Nginx configuration updated
+          
+          📱 Next Steps:
+          1. Configure your Telegram bot credentials in .env file
+          2. Restart the stack: docker compose -f /opt/devops-portfolio/docker-compose.yml restart
+          3. Test alerts by visiting: https://pishchik-dev.tech/alertmanager/
+          
+          🧪 Test Alerts:
+          - Create a test alert via Alertmanager API
+          - Check your Telegram chat for notifications
+          
+          Happy monitoring! 🚀

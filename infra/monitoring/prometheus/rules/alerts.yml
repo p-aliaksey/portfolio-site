@@ -1,0 +1,190 @@
+groups:
+  - name: application.rules
+    rules:
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }} errors per second for the last 5 minutes"
+
+      # High response time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }} seconds"
+
+      # Application down
+      - alert: ApplicationDown
+        expr: up{job="flask-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Application is down"
+          description: "Flask application has been down for more than 1 minute"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (container_memory_usage_bytes{name="app"} / container_spec_memory_limit_bytes{name="app"}) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }} of the limit"
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{name="app"}[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value | humanizePercentage }}"
+
+  - name: infrastructure.rules
+    rules:
+      # Prometheus down
+      - alert: PrometheusDown
+        expr: up{job="prometheus"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus is down"
+          description: "Prometheus monitoring system is not responding"
+
+      # Grafana down
+      - alert: GrafanaDown
+        expr: up{job="grafana"} == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Grafana is down"
+          description: "Grafana dashboard is not accessible"
+
+      # Loki down
+      - alert: LokiDown
+        expr: up{job="loki"} == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Loki is down"
+          description: "Loki logging system is not responding"
+
+      # Alertmanager down
+      - alert: AlertmanagerDown
+        expr: up{job="alertmanager"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Alertmanager is down"
+          description: "Alertmanager is not responding, alerts may not be sent"
+
+      # Nginx down
+      - alert: NginxDown
+        expr: up{job="nginx"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Nginx is down"
+          description: "Nginx reverse proxy is not responding"
+
+  - name: system.rules
+    rules:
+      # Disk space low
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space is low"
+          description: "Disk space is {{ $value | humanizePercentage }} full"
+
+      # High disk I/O
+      - alert: HighDiskIO
+        expr: rate(node_disk_io_time_seconds_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk I/O"
+          description: "Disk I/O is {{ $value | humanizePercentage }}"
+
+      # Network connectivity issues
+      - alert: NetworkConnectivityIssues
+        expr: rate(node_network_receive_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Network connectivity issues"
+          description: "Network receive errors rate is {{ $value }} per second"
+
+  - name: backup.rules
+    rules:
+      # Backup failed
+      - alert: BackupFailed
+        expr: increase(backup_failed_total[24h]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backup failed"
+          description: "Backup has failed in the last 24 hours"
+
+      # Backup not run
+      - alert: BackupNotRun
+        expr: time() - backup_last_success_timestamp > 86400
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backup not run"
+          description: "Backup has not been run for more than 24 hours"
+
+      # Backup size too small
+      - alert: BackupSizeTooSmall
+        expr: backup_size_bytes < 1000000  # Less than 1MB
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backup size is too small"
+          description: "Backup size is only {{ $value | humanizeBytes }}, possible issue"
+
+  - name: docker.rules
+    rules:
+      # Container restarting frequently
+      - alert: ContainerRestarting
+        expr: rate(container_start_time_seconds[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container restarting frequently"
+          description: "Container {{ $labels.name }} is restarting {{ $value }} times per second"
+
+      # Container stopped
+      - alert: ContainerStopped
+        expr: time() - container_last_seen > 300
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container stopped"
+          description: "Container {{ $labels.name }} has been stopped for more than 5 minutes"

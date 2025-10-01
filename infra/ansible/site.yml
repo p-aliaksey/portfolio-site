@@ -4,3 +4,6 @@
 
 - name: Deploy Application
   import_playbook: deploy.yml
+
+- name: Setup Telegram Alerting
+  import_playbook: setup_telegram_alerting.yml

@@ -1,0 +1,127 @@
+global:
+  # Telegram bot configuration
+  telegram_api_url: 'https://api.telegram.org'
+  # These will be set via environment variables
+  telegram_bot_token: '${TELEGRAM_BOT_TOKEN}'
+  telegram_chat_id: '${TELEGRAM_CHAT_ID}'
+
+# The directory from which notification templates are read.
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# The root route on which each alert is routed.
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'telegram-notifications'
+  routes:
+    # Critical alerts - immediate notification
+    - match:
+        severity: critical
+      receiver: 'telegram-critical'
+      group_wait: 5s
+      repeat_interval: 30m
+    # Warning alerts - grouped notification
+    - match:
+        severity: warning
+      receiver: 'telegram-warning'
+      group_wait: 30s
+      repeat_interval: 2h
+    # Info alerts - less frequent
+    - match:
+        severity: info
+      receiver: 'telegram-info'
+      group_wait: 1m
+      repeat_interval: 4h
+
+# Inhibition rules allow to mute a set of alerts given that another alert is
+# firing.
+inhibit_rules:
+  # Mute any warning-level alerts if the same alert is already critical.
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster', 'service']
+
+# A list of notification receivers.
+receivers:
+  - name: 'telegram-notifications'
+    telegram_configs:
+      - bot_token: '${TELEGRAM_BOT_TOKEN}'
+        chat_id: '${TELEGRAM_CHAT_ID}'
+        api_url: 'https://api.telegram.org'
+        message: |
+          🚨 *Alert: {{ .GroupLabels.alertname }}*
+          
+          *Status:* {{ .Status | toUpper }}
+          *Severity:* {{ .CommonLabels.severity | toUpper }}
+          
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance }}
+          *Started:* {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+          
+          *Dashboard:* https://pishchik-dev.tech/grafana
+          *Prometheus:* https://pishchik-dev.tech/prometheus
+          *Alertmanager:* https://pishchik-dev.tech/alertmanager
+
+  - name: 'telegram-critical'
+    telegram_configs:
+      - bot_token: '${TELEGRAM_BOT_TOKEN}'
+        chat_id: '${TELEGRAM_CHAT_ID}'
+        api_url: 'https://api.telegram.org'
+        message: |
+          🔥 *CRITICAL ALERT* 🔥
+          
+          *Alert:* {{ .GroupLabels.alertname }}
+          *Status:* {{ .Status | toUpper }}
+          
+          {{ range .Alerts }}
+          *Summary:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance }}
+          *Started:* {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+          
+          *Action Required:* Immediate attention needed!
+          *Dashboard:* https://pishchik-dev.tech/grafana
+
+  - name: 'telegram-warning'
+    telegram_configs:
+      - bot_token: '${TELEGRAM_BOT_TOKEN}'
+        chat_id: '${TELEGRAM_CHAT_ID}'
+        api_url: 'https://api.telegram.org'
+        message: |
+          ⚠️ *WARNING ALERT* ⚠️
+          
+          *Alert:* {{ .GroupLabels.alertname }}
+          *Status:* {{ .Status | toUpper }}
+          
+          {{ range .Alerts }}
+          *Summary:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance }}
+          {{ end }}
+          
+          *Dashboard:* https://pishchik-dev.tech/grafana
+
+  - name: 'telegram-info'
+    telegram_configs:
+      - bot_token: '${TELEGRAM_BOT_TOKEN}'
+        chat_id: '${TELEGRAM_CHAT_ID}'
+        api_url: 'https://api.telegram.org'
+        message: |
+          ℹ️ *INFO ALERT* ℹ️
+          
+          *Alert:* {{ .GroupLabels.alertname }}
+          *Status:* {{ .Status | toUpper }}
+          
+          {{ range .Alerts }}
+          *Summary:* {{ .Annotations.summary }}
+          *Instance:* {{ .Labels.instance }}
+          {{ end }}
