@@ -51,7 +51,6 @@ services:
       - "--web.enable-admin-api"
       - "--web.listen-address=0.0.0.0:9090"
       - "--storage.tsdb.retention.time=15d"
-      - "--alertmanager.url=http://alertmanager:9093"
     volumes:
       - ./infra/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./infra/monitoring/prometheus/rules:/etc/prometheus/rules:ro

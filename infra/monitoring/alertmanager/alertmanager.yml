@@ -1,11 +1,7 @@
 global:
-  # Telegram bot configuration
-  telegram_api_url: 'https://api.telegram.org'
-  # These will be set via environment variables
-  telegram_bot_token: '${TELEGRAM_BOT_TOKEN}'
-  telegram_chat_id: '${TELEGRAM_CHAT_ID}'
-  # Disable Telegram notifications if token is not configured
-  telegram_send_resolved: false
+  # Global configuration
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'alertmanager@example.com'
 
 # The directory from which notification templates are read.
 templates:
@@ -52,8 +48,8 @@ inhibit_rules:
 receivers:
   - name: 'telegram-notifications'
     telegram_configs:
-      - bot_token: '${TELEGRAM_BOT_TOKEN}'
-        chat_id: '${TELEGRAM_CHAT_ID}'
+      - bot_token: 'your_bot_token_here'
+        chat_id: 'your_chat_id_here'
         api_url: 'https://api.telegram.org'
         message: |
           🚨 *Alert: {{ .GroupLabels.alertname }}*
@@ -74,8 +70,8 @@ receivers:
 
   - name: 'telegram-critical'
     telegram_configs:
-      - bot_token: '${TELEGRAM_BOT_TOKEN}'
-        chat_id: '${TELEGRAM_CHAT_ID}'
+      - bot_token: 'your_bot_token_here'
+        chat_id: 'your_chat_id_here'
         api_url: 'https://api.telegram.org'
         message: |
           🔥 *CRITICAL ALERT* 🔥
@@ -95,8 +91,8 @@ receivers:
 
   - name: 'telegram-warning'
     telegram_configs:
-      - bot_token: '${TELEGRAM_BOT_TOKEN}'
-        chat_id: '${TELEGRAM_CHAT_ID}'
+      - bot_token: 'your_bot_token_here'
+        chat_id: 'your_chat_id_here'
         api_url: 'https://api.telegram.org'
         message: |
           ⚠️ *WARNING ALERT* ⚠️
@@ -114,8 +110,8 @@ receivers:
 
   - name: 'telegram-info'
     telegram_configs:
-      - bot_token: '${TELEGRAM_BOT_TOKEN}'
-        chat_id: '${TELEGRAM_CHAT_ID}'
+      - bot_token: 'your_bot_token_here'
+        chat_id: 'your_chat_id_here'
         api_url: 'https://api.telegram.org'
         message: |
           ℹ️ *INFO ALERT* ℹ️
