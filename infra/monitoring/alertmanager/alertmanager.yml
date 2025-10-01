@@ -4,6 +4,8 @@ global:
   # These will be set via environment variables
   telegram_bot_token: '${TELEGRAM_BOT_TOKEN}'
   telegram_chat_id: '${TELEGRAM_CHAT_ID}'
+  # Disable Telegram notifications if token is not configured
+  telegram_send_resolved: false
 
 # The directory from which notification templates are read.
 templates:

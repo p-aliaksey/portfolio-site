@@ -60,38 +60,44 @@
         mode: '0644'
       when: not ansible_check_mode
 
+    - name: Create .env file with placeholder values if it doesn't exist
+      copy:
+        content: |
+          # Telegram Bot Configuration
+          # Configure these values manually after deployment
+          TELEGRAM_BOT_TOKEN=your_bot_token_here
+          TELEGRAM_CHAT_ID=your_chat_id_here
+        dest: /opt/devops-portfolio/.env
+        mode: '0644'
+      when: not ansible_check_mode
+
     - name: Display Telegram setup instructions
       debug:
         msg: |
           📱 Telegram Alerting Setup Required!
           ===================================
           
-          1. Create a Telegram bot:
-             - Open Telegram and search for @BotFather
-             - Send /newbot command
-             - Choose a name for your bot (e.g., 'DevOps Portfolio Alerts')
-             - Choose a username for your bot (e.g., 'devops_portfolio_alerts_bot')
-             - Copy the bot token
+          The system has been deployed with placeholder Telegram credentials.
+          To enable Telegram notifications, you need to:
           
-          2. Get your Chat ID:
-             - Start a chat with your bot
-             - Send any message to the bot
-             - Visit: https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates
-             - Find your chat ID in the response
+          1. SSH to your server:
+             ssh user@your-server-ip
           
-          3. Update .env file:
+          2. Run the automated setup script:
+             /opt/devops-portfolio/setup-telegram-bot.sh
+          
+          3. Or manually configure:
              - Edit /opt/devops-portfolio/.env
              - Replace 'your_bot_token_here' with your actual bot token
              - Replace 'your_chat_id_here' with your actual chat ID
-          
-          4. Restart the stack:
-             - Run: docker compose -f /opt/devops-portfolio/docker-compose.yml down
-             - Run: docker compose -f /opt/devops-portfolio/docker-compose.yml up -d
+             - Restart: docker compose -f /opt/devops-portfolio/docker-compose.yml restart alertmanager
           
           🌐 Access URLs:
           - Alertmanager: https://pishchik-dev.tech/alertmanager/
           - Prometheus: https://pishchik-dev.tech/prometheus/
           - Grafana: https://pishchik-dev.tech/grafana/
+          
+          📝 Note: The system will work without Telegram initially, but alerts won't be sent until you configure the bot.
 
     - name: Stop existing containers
       shell: docker compose -f /opt/devops-portfolio/docker-compose.yml down

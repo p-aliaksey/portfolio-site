@@ -7,3 +7,6 @@
 
 - name: Setup Telegram Alerting
   import_playbook: setup_telegram_alerting.yml
+
+- name: Configure Telegram Bot
+  import_playbook: configure_telegram_bot.yml

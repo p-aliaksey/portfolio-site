@@ -88,6 +88,16 @@
         dest: /opt/devops-portfolio/docker-compose.yml
         mode: '0644'
 
+    - name: Create .env file with placeholder values
+      copy:
+        content: |
+          # Telegram Bot Configuration
+          # Configure these values manually after deployment
+          TELEGRAM_BOT_TOKEN=your_bot_token_here
+          TELEGRAM_CHAT_ID=your_chat_id_here
+        dest: /opt/devops-portfolio/.env
+        mode: '0644'
+
     - name: Stop existing containers
       shell: docker compose -f /opt/devops-portfolio/docker-compose.yml down
       args:

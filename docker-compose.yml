@@ -76,8 +76,8 @@ services:
     ports:
       - "9093:9093"
     environment:
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-your_bot_token_here}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-your_chat_id_here}
     env_file:
       - .env
     labels:
