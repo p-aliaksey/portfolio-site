@@ -145,6 +145,8 @@
         - { src: "infra/monitoring/update-alertmanager-config.sh", dest: "/opt/devops-portfolio/update-alertmanager-config.sh" }
         - { src: "infra/monitoring/test-alerts.sh", dest: "/opt/devops-portfolio/test-alerts.sh" }
         - { src: "infra/monitoring/test-issues.sh", dest: "/opt/devops-portfolio/test-issues.sh" }
+        - { src: "infra/monitoring/check-metrics.sh", dest: "/opt/devops-portfolio/infra/monitoring/check-metrics.sh" }
+        - { src: "infra/monitoring/load-test.sh", dest: "/opt/devops-portfolio/infra/monitoring/load-test.sh" }
 
     - name: Copy application files
       synchronize:
