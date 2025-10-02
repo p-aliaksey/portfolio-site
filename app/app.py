@@ -93,16 +93,86 @@ def create_app() -> Flask:
     @app.route("/api/system/docker")
     def system_docker():
         try:
-            # Простой fallback - возвращаем статическую информацию
+            import subprocess
+            import json
+            
+            # Попытка получить реальную информацию о контейнерах через Docker API
+            try:
+                # Используем docker ps для получения информации о контейнерах
+                result = subprocess.run([
+                    'docker', 'ps', '-a', '--format', 
+                    '{"Names":"{{.Names}}","Status":"{{.Status}}","State":"{{.State}}","Image":"{{.Image}}"}'
+                ], capture_output=True, text=True, timeout=10)
+                
+                if result.returncode == 0:
+                    containers = []
+                    for line in result.stdout.strip().split('\n'):
+                        if line.strip():
+                            try:
+                                container_info = json.loads(line)
+                                # Определяем статус и иконку
+                                if 'Up' in container_info.get('Status', ''):
+                                    container_info['State'] = 'running'
+                                    container_info['status_icon'] = '🟢'
+                                    container_info['status_text'] = 'UP'
+                                else:
+                                    container_info['State'] = 'stopped'
+                                    container_info['status_icon'] = '🔴'
+                                    container_info['status_text'] = 'DOWN'
+                                containers.append(container_info)
+                            except json.JSONDecodeError:
+                                continue
+                    
+                    if containers:
+                        return {"containers": containers, "debug": {"method": "docker_api", "count": len(containers)}}
+                
+            except (subprocess.TimeoutExpired, FileNotFoundError, subprocess.CalledProcessError) as e:
+                app.logger.warning(f"Docker API недоступен: {str(e)}")
+            
+            # Fallback - пытаемся получить информацию через docker.sock
+            try:
+                import docker
+                client = docker.from_env()
+                containers = []
+                
+                for container in client.containers.list(all=True):
+                    status = container.status
+                    if status == 'running':
+                        status_icon = '🟢'
+                        status_text = 'UP'
+                        state = 'running'
+                    else:
+                        status_icon = '🔴'
+                        status_text = 'DOWN'
+                        state = 'stopped'
+                    
+                    containers.append({
+                        'Names': container.name,
+                        'Status': container.status,
+                        'State': state,
+                        'status_icon': status_icon,
+                        'status_text': status_text,
+                        'Image': container.image.tags[0] if container.image.tags else 'unknown'
+                    })
+                
+                return {"containers": containers, "debug": {"method": "docker_python", "count": len(containers)}}
+                
+            except Exception as e:
+                app.logger.warning(f"Docker Python API недоступен: {str(e)}")
+            
+            # Последний fallback - статическая информация с предупреждением
             static_containers = [
                 {'Names': 'app', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'},
                 {'Names': 'nginx', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'},
                 {'Names': 'prometheus', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'},
                 {'Names': 'grafana', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'},
                 {'Names': 'loki', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'},
-                {'Names': 'promtail', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'}
+                {'Names': 'promtail', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'},
+                {'Names': 'alertmanager', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'},
+                {'Names': 'node-exporter', 'Status': 'Up', 'State': 'running', 'status_icon': '🟢', 'status_text': 'UP'}
             ]
-            return {"containers": static_containers, "debug": {"method": "static_fallback"}}
+            return {"containers": static_containers, "debug": {"method": "static_fallback", "warning": "Real Docker API unavailable"}}
+            
         except Exception as e:
             return {"error": str(e), "containers": [], "debug": {"exception": str(e)}}
     
@@ -228,6 +298,7 @@ def create_app() -> Flask:
             # Проверяем статус cron задач
             try:
                 cron_found = False
+                cron_method = "none"
                 
                 # Проверяем cron через файлы crontab
                 cron_files = [
@@ -235,8 +306,7 @@ def create_app() -> Flask:
                     '/var/spool/cron/crontabs/ubuntu',
                     '/var/spool/cron/crontabs/root',
                     '/var/spool/cron/ubuntu',
-                    '/var/spool/cron/root',
-                    '/var/spool/cron/crontabs/root'
+                    '/var/spool/cron/root'
                 ]
                 
                 for cron_file in cron_files:
@@ -245,6 +315,7 @@ def create_app() -> Flask:
                             content = f.read()
                             if 'backup.sh' in content or 'devops-portfolio' in content:
                                 cron_found = True
+                                cron_method = f"file:{cron_file}"
                                 break
                     except:
                         continue
@@ -255,52 +326,52 @@ def create_app() -> Flask:
                         result = subprocess.run(['crontab', '-l'], capture_output=True, text=True, timeout=5)
                         if result.returncode == 0 and ('backup.sh' in result.stdout or 'devops-portfolio' in result.stdout):
                             cron_found = True
-                    except:
-                        pass
-                
-                # Проверяем через systemctl (для systemd cron)
-                if not cron_found:
-                    try:
-                        result = subprocess.run(['systemctl', 'is-active', 'cron'], capture_output=True, text=True, timeout=5)
-                        if result.returncode == 0 and result.stdout.strip() == 'active':
-                            # Если cron активен, считаем что автоматизация настроена
-                            cron_found = True
+                            cron_method = "crontab"
                     except:
                         pass
                 
                 # Проверяем через переменные окружения (для Docker)
                 if not cron_found:
                     try:
-                        # Проверяем есть ли переменная CRON_ENABLED
                         if os.environ.get('CRON_ENABLED') == 'true':
                             cron_found = True
+                            cron_method = "env_var"
                     except:
                         pass
                 
-                # Проверяем наличие cron задач через crontab -l для root (без sudo в контейнере)
-                if not cron_found:
-                    try:
-                        result = subprocess.run(['crontab', '-l'], capture_output=True, text=True, timeout=5)
-                        if result.returncode == 0 and ('backup.sh' in result.stdout or 'devops-portfolio' in result.stdout):
-                            cron_found = True
-                    except:
-                        pass
-                
-                # Принудительная проверка - если есть бэкапы, считаем что cron работает
+                # Эвристическая проверка - если есть свежие бэкапы, считаем что автоматизация работает
                 if not cron_found and backup_stats["total_backups"] > 0:
-                    # Проверяем есть ли бэкапы за последние 25 часов (автоматические)
                     if backup_files:
                         last_backup_time = datetime.fromtimestamp(os.path.getmtime(backup_files[0]))
                         hours_since_backup = (datetime.now() - last_backup_time).total_seconds() / 3600
-                        if hours_since_backup < 25:  # Бэкап был в последние 25 часов
+                        
+                        # Если бэкап был в последние 25 часов и есть несколько бэкапов
+                        if hours_since_backup < 25 and backup_stats["total_backups"] >= 2:
                             cron_found = True
+                            cron_method = "heuristic"
+                        # Если есть регулярные бэкапы (проверяем интервалы)
+                        elif len(backup_files) >= 2:
+                            # Проверяем интервалы между бэкапами
+                            times = [os.path.getmtime(f) for f in backup_files[:3]]
+                            times.sort(reverse=True)
+                            
+                            if len(times) >= 2:
+                                interval = times[0] - times[1]
+                                # Если интервал между 20-28 часов (ежедневные бэкапы)
+                                if 20 * 3600 <= interval <= 28 * 3600:
+                                    cron_found = True
+                                    cron_method = "pattern_analysis"
                 
                 if cron_found:
                     backup_stats["cron_status"] = "Active"
+                    backup_stats["cron_method"] = cron_method
                 else:
                     backup_stats["cron_status"] = "Not Found"
-            except:
-                backup_stats["cron_status"] = "Unknown"
+                    backup_stats["cron_method"] = "none"
+                    
+            except Exception as e:
+                backup_stats["cron_status"] = "Error"
+                backup_stats["cron_error"] = str(e)
             
             return backup_stats
 

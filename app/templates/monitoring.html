@@ -259,6 +259,11 @@
             color: #6c757d;
         }
         
+        .backup-health.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
         .cron-status {
             padding: 8px 16px;
             border-radius: 20px;
@@ -281,6 +286,11 @@
         .cron-status.unknown {
             background: #e2e3e5;
             color: #6c757d;
+        }
+        
+        .cron-status.error {
+            background: #f8d7da;
+            color: #721c24;
         }
         
         .backup-item {
@@ -521,12 +531,23 @@
                 
                 // General statistics
                 const backupStats = document.getElementById('backup-stats');
+                
+                // Определяем цвет для количества бэкапов
+                let statsColor = '#2c3e50'; // по умолчанию темно-синий
+                if (backupData.total_backups === 0) {
+                    statsColor = '#dc3545'; // красный для отсутствия бэкапов
+                } else if (backupData.total_backups < 3) {
+                    statsColor = '#fd7e14'; // оранжевый для малого количества
+                } else {
+                    statsColor = '#28a745'; // зеленый для нормального количества
+                }
+                
                 backupStats.innerHTML = `
-                    <div class="backup-stat-number">${backupData.total_backups}</div>
+                    <div class="backup-stat-number" style="color: ${statsColor};">${backupData.total_backups}</div>
                     <div class="backup-stat-label">Total Backups</div>
                     <div style="margin-top: 10px; font-size: 0.9em; color: #6c757d;">
                         <div>Total Size: ${backupData.total_size}</div>
-                        <div class="backup-health ${backupData.backup_health.toLowerCase()}">
+                        <div class="backup-health ${backupData.backup_health.toLowerCase().replace(' ', '-')}">
                             ${backupData.backup_health}
                         </div>
                     </div>
@@ -556,12 +577,37 @@
                 
                 // Cron status
                 const cronStatus = document.getElementById('cron-status');
+                let cronStatusText = backupData.cron_status;
+                let cronDetails = 'Automatic Backups';
+                
+                // Добавляем детали о методе определения статуса
+                if (backupData.cron_method) {
+                    switch(backupData.cron_method) {
+                        case 'crontab':
+                            cronDetails = 'Detected via crontab';
+                            break;
+                        case 'heuristic':
+                            cronDetails = 'Detected by backup pattern';
+                            break;
+                        case 'pattern_analysis':
+                            cronDetails = 'Detected by schedule analysis';
+                            break;
+                        case 'env_var':
+                            cronDetails = 'Enabled via environment';
+                            break;
+                        default:
+                            if (backupData.cron_method.startsWith('file:')) {
+                                cronDetails = 'Detected in cron file';
+                            }
+                    }
+                }
+                
                 cronStatus.innerHTML = `
                     <div class="cron-status ${backupData.cron_status.toLowerCase().replace(' ', '-')}">
-                        ${backupData.cron_status}
+                        ${cronStatusText}
                     </div>
                     <div style="margin-top: 8px; font-size: 0.9em; color: #6c757d;">
-                        Automatic Backups
+                        ${cronDetails}
                     </div>
                 `;
                 
